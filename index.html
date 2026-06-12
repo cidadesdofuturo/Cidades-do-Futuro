@@ -1791,8 +1791,7 @@ function initApp() {
   console.log('[DEBUG] Primeiros valores de Valor:', RESGATES.slice(0,5).map(r=>r['Valor']));
   console.log('[DEBUG] totalVal calculado:', totalVal);
   document.getElementById('header-stats').innerHTML = `
-    <div class="stat-pill"><strong>${munsBenef}</strong> municípios</div>
-    <div class="stat-pill"><strong>${solsUnicas}</strong> soluções</div>
+    <div class="stat-pill"><strong>${RESGATES.length}</strong> resgates</div>
     <div class="stat-pill"><strong>R$ ${(totalVal/1e6).toFixed(1)}M</strong> investidos</div>
   `;
 
@@ -1849,4 +1848,3 @@ initData();
 </script>
 </body>
 </html>
-<!-- atualização -->
