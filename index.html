@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace de GovTechs — Cidades do Futuro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root {
+    --azul: #0A2342;
+    --azul-medio: #1B4F8A;
+    --azul-claro: #3B82C4;
+    --ouro: #F5A623;
+    --ouro-claro: #FDE9BC;
+    --verde: #1DB878;
+    --cinza-bg: #F0F4F9;
+    --cinza-borda: #D1DCE8;
+    --branco: #FFFFFF;
+    --texto: #1A2E44;
+    --texto-leve: #5E7896;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Space Grotesk', sans-serif; background: var(--cinza-bg); color: var(--texto); line-height: 1.6; }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--azul);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: 68px;
+    position: sticky; top: 0; z-index: 1000;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .logo-badge {
+    background: var(--ouro);
+    color: var(--azul);
+    font-weight: 700;
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .35rem .7rem;
+    border-radius: 4px;
+  }
+  header h1 { color: var(--branco); font-size: 1.15rem; font-weight: 600; }
+  header p { color: rgba(255,255,255,.55); font-size: .78rem; font-family: 'DM Mono', monospace; }
+  .header-right { margin-left: auto; display: flex; gap: .8rem; align-items: center; }
+  .stat-pill {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    color: var(--branco);
+    font-size: .75rem;
+    padding: .3rem .75rem;
+    border-radius: 999px;
+    font-family: 'DM Mono', monospace;
+  }
+  .stat-pill strong { color: var(--ouro); }
+
+  /* ── MAP SECTION ── */
+  .map-section {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    height: 520px;
+    border-bottom: 3px solid var(--ouro);
+  }
+  #map { width: 100%; height: 100%; }
+  .map-sidebar {
+    background: var(--azul);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 1.2rem 1.2rem .8rem;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  .sidebar-header h3 {
+    color: var(--branco);
+    font-size: .85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: .6rem;
+  }
+  .sol-filter-input {
+    width: 100%;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 6px;
+    color: var(--branco);
+    padding: .5rem .75rem;
+    font-size: .85rem;
+    font-family: 'Space Grotesk', sans-serif;
+    outline: none;
+  }
+  .sol-filter-input::placeholder { color: rgba(255,255,255,.4); }
+  .sol-filter-input:focus { border-color: var(--ouro); }
+  .sol-list { overflow-y: auto; flex: 1; padding: .6rem; }
+  .sol-tag {
+    display: block;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 6px;
+    color: rgba(255,255,255,.85);
+    font-size: .8rem;
+    padding: .5rem .8rem;
+    cursor: pointer;
+    margin-bottom: .4rem;
+    transition: all .18s;
+    user-select: none;
+  }
+  .sol-tag:hover, .sol-tag.active {
+    background: var(--ouro);
+    border-color: var(--ouro);
+    color: var(--azul);
+    font-weight: 600;
+  }
+  .sol-tag .count {
+    float: right;
+    font-family: 'DM Mono', monospace;
+    font-size: .7rem;
+    opacity: .7;
+  }
+  .sol-tag.active .count { opacity: 1; }
+  .btn-clear {
+    margin: .6rem;
+    width: calc(100% - 1.2rem);
+    background: none;
+    border: 1px dashed rgba(255,255,255,.25);
+    border-radius: 6px;
+    color: rgba(255,255,255,.5);
+    font-size: .78rem;
+    padding: .45rem;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all .18s;
+  }
+  .btn-clear:hover { border-color: var(--ouro); color: var(--ouro); }
+
+  /* ── POPUP ── */
+  .leaflet-popup-content-wrapper {
+    border-radius: 10px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,.2) !important;
+    border: none !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+  .leaflet-popup-content { margin: 0 !important; width: 300px !important; }
+  .popup-header {
+    background: var(--azul);
+    color: var(--branco);
+    padding: .9rem 1rem .7rem;
+  }
+  .popup-header .mun { font-size: .7rem; color: var(--ouro); text-transform: uppercase; letter-spacing: .1em; font-family: 'DM Mono', monospace; }
+  .popup-header .sol-name { font-size: 1.05rem; font-weight: 700; }
+  .popup-body { padding: .85rem 1rem; background: var(--branco); }
+  .popup-row { display: flex; justify-content: space-between; align-items: center; padding: .3rem 0; border-bottom: 1px solid #f0f0f0; font-size: .82rem; }
+  .popup-row:last-child { border-bottom: none; }
+  .popup-row .label { color: var(--texto-leve); }
+  .popup-row .val { font-weight: 600; color: var(--texto); font-family: 'DM Mono', monospace; font-size: .8rem; }
+  .popup-tipo { display: inline-block; font-size: .68rem; padding: .2rem .55rem; border-radius: 999px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
+  .tipo-tec { background: #DBEAFE; color: #1E40AF; }
+  .avaliado-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; font-weight: 600; color: var(--verde); }
+  /* rating section */
+  .popup-rating { margin-top: .6rem; padding: .7rem; background: var(--cinza-bg); border-radius: 8px; }
+  .popup-rating .rating-title { font-size: .72rem; color: var(--texto-leve); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .4rem; }
+  .stars { display: flex; gap: 2px; margin-bottom: .4rem; }
+  .star { font-size: 1rem; color: #E5E7EB; }
+  .star.on { color: #F5A623; }
+  .media-val { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--azul); font-size: 1rem; }
+  .sub-notas { display: grid; grid-template-columns: 1fr 1fr; gap: .25rem; margin-bottom: .5rem; }
+  .sub-nota { font-size: .7rem; color: var(--texto-leve); }
+  .sub-nota strong { color: var(--texto); }
+  .depoimento-block { font-size: .76rem; color: var(--texto); line-height: 1.5; font-style: italic; max-height: 80px; overflow-y: auto; padding-right: .2rem; border-left: 3px solid var(--ouro); padding-left: .5rem; margin-top: .4rem; }
+
+  /* ── CATALOG SECTION ── */
+  .catalog-section { padding: 2.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+  .catalog-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
+  .catalog-header h2 { font-size: 1.5rem; font-weight: 700; color: var(--azul); }
+  .catalog-header p { font-size: .85rem; color: var(--texto-leve); }
+  .filters-bar {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    background: var(--branco);
+    border: 1px solid var(--cinza-borda);
+    border-radius: 10px;
+    padding: .85rem 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+  .filters-bar label { font-size: .78rem; color: var(--texto-leve); font-weight: 500; }
+  .filter-select, .filter-input {
+    border: 1px solid var(--cinza-borda);
+    border-radius: 6px;
+    background: var(--cinza-bg);
+    color: var(--texto);
+    padding: .4rem .75rem;
+    font-size: .82rem;
+    font-family: 'Space Grotesk', sans-serif;
+    outline: none;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .filter-select:focus, .filter-input:focus { border-color: var(--azul-claro); }
+  .filter-input { width: 220px; }
+  .filter-count {
+    margin-left: auto;
+    font-size: .78rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--texto-leve);
+  }
+  .filter-count strong { color: var(--azul-medio); }
+
+  /* ── GRID ── */
+  .sol-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+  .sol-card {
+    background: var(--branco);
+    border: 1px solid var(--cinza-borda);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform .18s, box-shadow .18s;
+  }
+  .sol-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(10,35,66,.12); }
+  .card-top {
+    background: var(--azul);
+    padding: 1.1rem 1.2rem .9rem;
+    position: relative;
+  }
+  .card-dim {
+    font-size: .65rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--ouro);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin-bottom: .35rem;
+  }
+  .card-nome { font-size: 1.05rem; font-weight: 700; color: var(--branco); }
+  .card-topico {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    font-size: .65rem;
+    background: rgba(255,255,255,.12);
+    color: rgba(255,255,255,.75);
+    padding: .2rem .55rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .card-body { padding: 1rem 1.2rem; flex: 1; display: flex; flex-direction: column; gap: .7rem; }
+  .card-desc { font-size: .82rem; color: var(--texto-leve); line-height: 1.55; flex: 1; }
+  .card-impacto {
+    font-size: .8rem;
+    color: var(--texto);
+    background: var(--ouro-claro);
+    border-left: 3px solid var(--ouro);
+    padding: .5rem .7rem;
+    border-radius: 0 6px 6px 0;
+    line-height: 1.45;
+  }
+  .card-impacto strong { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: #A0620A; margin-bottom: .15rem; }
+  .card-links { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .75rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: .35rem .75rem;
+    border-radius: 6px;
+    transition: all .15s;
+  }
+  .card-link.site { background: #EBF4FF; color: var(--azul-medio); border: 1px solid #BCD9F5; }
+  .card-link.video { background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
+  .card-link:hover { filter: brightness(.93); }
+  .card-muns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-top: .2rem;
+  }
+  .mun-chip {
+    font-size: .7rem;
+    background: #EDF2F9;
+    color: var(--azul-medio);
+    border-radius: 4px;
+    padding: .15rem .5rem;
+    font-weight: 500;
+  }
+  .card-footer {
+    padding: .7rem 1.2rem;
+    border-top: 1px solid var(--cinza-borda);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FAFCFE;
+  }
+  .dim-badge {
+    font-size: .68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    padding: .2rem .55rem;
+    border-radius: 999px;
+  }
+  .dim-economica { background: #D1FAE5; color: #065F46; }
+  .dim-institucional { background: #DBEAFE; color: #1E40AF; }
+  .dim-sociocultural { background: #EDE9FE; color: #5B21B6; }
+  .dim-ambiente { background: #D1FAE5; color: #14532D; background: #DCFCE7; }
+  .dim-outro { background: #F3F4F6; color: #374151; }
+  .muns-label { font-size: .72rem; color: var(--texto-leve); font-family: 'DM Mono', monospace; }
+
+  /* ── LEGEND MAP ── */
+  .map-legend {
+    position: absolute;
+    bottom: 30px;
+    left: 10px;
+    background: white;
+    border-radius: 8px;
+    padding: .6rem .8rem;
+    font-size: .72rem;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    pointer-events: none;
+    border: 1px solid var(--cinza-borda);
+  }
+  .legend-item { display: flex; align-items: center; gap: .45rem; margin-bottom: .25rem; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 3rem; color: var(--texto-leve); font-size: .9rem; }
+  .empty-state div { font-size: 2rem; margin-bottom: .5rem; }
+
+  /* scrollbar */
+  .sol-list::-webkit-scrollbar { width: 4px; }
+  .sol-list::-webkit-scrollbar-track { background: transparent; }
+  .sol-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 4px; }
+
+  /* ── MODAL OVERLAY ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 20, 40, 0.72);
+    backdrop-filter: blur(4px);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: var(--branco);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 880px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,.45);
+    animation: modalIn .22s cubic-bezier(.22,1,.36,1);
+    display: flex;
+    flex-direction: column;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(28px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-head {
+    background: var(--azul);
+    padding: 1.6rem 1.8rem 1.3rem;
+    position: relative;
+    border-radius: 16px 16px 0 0;
+    flex-shrink: 0;
+  }
+  .modal-head .m-eye { font-size: .68rem; font-family: 'DM Mono', monospace; color: var(--ouro); text-transform: uppercase; letter-spacing: .14em; margin-bottom: .4rem; }
+  .modal-head h2 { color: var(--branco); font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+  .modal-head .m-topico {
+    display: inline-block;
+    margin-top: .55rem;
+    font-size: .72rem;
+    background: rgba(255,255,255,.13);
+    color: rgba(255,255,255,.8);
+    padding: .25rem .65rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .modal-close {
+    position: absolute;
+    top: 1.1rem; right: 1.2rem;
+    background: rgba(255,255,255,.12);
+    border: none;
+    color: var(--branco);
+    font-size: 1.1rem;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+    line-height: 1;
+  }
+  .modal-close:hover { background: rgba(255,255,255,.25); }
+
+  .modal-body { padding: 0; flex: 1; overflow-y: auto; }
+
+  /* tabs */
+  .modal-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--cinza-borda);
+    background: var(--branco);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .modal-tab {
+    padding: .85rem 1.4rem;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--texto-leve);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all .15s;
+    user-select: none;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .modal-tab:hover { color: var(--azul-medio); }
+  .modal-tab.active { color: var(--azul); border-bottom-color: var(--ouro); }
+
+  .modal-panel { display: none; padding: 1.6rem 1.8rem; }
+  .modal-panel.active { display: block; }
+
+  /* info panel */
+  .modal-desc { font-size: .9rem; color: var(--texto); line-height: 1.7; margin-bottom: 1.2rem; }
+  .modal-impacto {
+    background: var(--ouro-claro);
+    border-left: 4px solid var(--ouro);
+    padding: .9rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1.2rem;
+  }
+  .modal-impacto .mi-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; color: #92600A; margin-bottom: .3rem; }
+  .modal-impacto p { font-size: .88rem; color: var(--texto); line-height: 1.55; }
+  .modal-links { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+  .modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    text-decoration: none;
+    padding: .5rem 1rem;
+    border-radius: 8px;
+    font-size: .83rem;
+    font-weight: 600;
+    transition: filter .15s;
+  }
+  .modal-link.site { background: #EBF4FF; color: var(--azul-medio); border: 1px solid #BCD9F5; }
+  .modal-link.video { background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
+  .modal-link:hover { filter: brightness(.92); }
+
+  .modal-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .8rem;
+    margin-bottom: 1.4rem;
+  }
+  .modal-stat {
+    background: var(--cinza-bg);
+    border: 1px solid var(--cinza-borda);
+    border-radius: 10px;
+    padding: .9rem 1rem;
+    text-align: center;
+  }
+  .modal-stat .ms-val { font-size: 1.5rem; font-weight: 700; color: var(--azul); font-family: 'DM Mono', monospace; }
+  .modal-stat .ms-lbl { font-size: .7rem; color: var(--texto-leve); text-transform: uppercase; letter-spacing: .07em; margin-top: .2rem; }
+
+  /* map panel */
+  #modal-map { width: 100%; height: 360px; border-radius: 10px; overflow: hidden; border: 1px solid var(--cinza-borda); }
+  .modal-mun-list { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
+  .modal-mun-chip {
+    font-size: .78rem;
+    background: #EDF2F9;
+    color: var(--azul-medio);
+    border-radius: 6px;
+    padding: .3rem .65rem;
+    font-weight: 500;
+    display: flex; align-items: center; gap: .3rem;
+  }
+  .modal-mun-chip.avaliado { background: #FEF3C7; color: #92600A; }
+
+  /* depoimentos panel */
+  .depo-card {
+    background: var(--cinza-bg);
+    border: 1px solid var(--cinza-borda);
+    border-radius: 12px;
+    padding: 1.2rem 1.3rem;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .depo-card::before {
+    content: '"';
+    position: absolute;
+    top: .5rem; left: 1rem;
+    font-size: 3.5rem;
+    color: var(--ouro);
+    font-family: Georgia, serif;
+    line-height: 1;
+    opacity: .35;
+  }
+  .depo-text { font-size: .88rem; color: var(--texto); line-height: 1.7; font-style: italic; padding-left: .5rem; margin-bottom: .9rem; }
+  .depo-meta { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+  .depo-mun { font-size: .78rem; font-weight: 700; color: var(--azul-medio); }
+  .depo-sol { font-size: .72rem; color: var(--texto-leve); }
+  .depo-stars { display: flex; gap: 2px; }
+  .depo-star { font-size: .9rem; color: #E5E7EB; }
+  .depo-star.on { color: var(--ouro); }
+  .depo-notas {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-top: .5rem;
+    padding-top: .5rem;
+    border-top: 1px solid var(--cinza-borda);
+  }
+  .depo-nota-chip { font-size: .7rem; background: var(--branco); border: 1px solid var(--cinza-borda); border-radius: 999px; padding: .15rem .55rem; color: var(--texto-leve); }
+  .depo-nota-chip strong { color: var(--texto); }
+  .no-depo { text-align: center; padding: 2rem; color: var(--texto-leve); font-size: .88rem; }
+  .no-depo div { font-size: 1.8rem; margin-bottom: .5rem; }
+
+  /* card click cursor */
+  .sol-card { cursor: pointer; }
+  .sol-card:hover .card-nome { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* modal scrollbar */
+  .modal-box::-webkit-scrollbar { width: 5px; }
+  .modal-box::-webkit-scrollbar-track { background: transparent; }
+  .modal-box::-webkit-scrollbar-thumb { background: var(--cinza-borda); border-radius: 3px; }
+  .modal-body::-webkit-scrollbar { width: 5px; }
+  .modal-body::-webkit-scrollbar-track { background: transparent; }
+  .modal-body::-webkit-scrollbar-thumb { background: var(--cinza-borda); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-badge">MG GOV</div>
+  <div>
+    <h1>Marketplace de GovTechs</h1>
+    <p>Programa Cidades do Futuro — Minas Gerais</p>
+  </div>
+  <div class="header-right" id="header-stats"></div>
+</header>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-head" id="modalHead">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="m-eye" id="modalEye"></div>
+      <h2 id="modalTitle"></h2>
+      <span class="m-topico" id="modalTopico"></span>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs" id="modalTabs">
+        <button class="modal-tab active" onclick="switchTab('info',this)">📋 Informações</button>
+        <button class="modal-tab" id="tabMapaBtn" onclick="switchTab('mapa',this)" style="display:none">🗺️ Municípios</button>
+        <button class="modal-tab" id="tabDepoBtn" onclick="switchTab('depo',this)" style="display:none">💬 Depoimentos</button>
+      </div>
+
+      <!-- TAB: INFO -->
+      <div class="modal-panel active" id="tab-info">
+        <div class="modal-impacto" id="modalImpacto" style="display:none">
+          <div class="mi-label">💡 Impacto Esperado</div>
+          <p id="modalImpactoTxt"></p>
+        </div>
+        <p class="modal-desc" id="modalDesc"></p>
+        <div class="modal-links" id="modalLinks"></div>
+        <div id="modalMunsInfo"></div>
+      </div>
+
+      <!-- TAB: MAPA -->
+      <div class="modal-panel" id="tab-mapa">
+        <div id="modal-map"></div>
+        <div class="modal-mun-list" id="modalMunList"></div>
+        <p style="font-size:.72rem;color:var(--texto-leve);margin-top:.7rem">
+          <span style="display:inline-block;width:10px;height:10px;background:#F5A623;border-radius:50%;margin-right:4px"></span> Município com avaliação registrada &nbsp;
+          <span style="display:inline-block;width:10px;height:10px;background:#1B4F8A;border-radius:50%;margin-right:4px"></span> Implantação sem avaliação
+        </p>
+      </div>
+
+      <!-- TAB: DEPOIMENTOS -->
+      <div class="modal-panel" id="tab-depo">
+        <div id="modalDepos"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP SECTION -->
+<div class="map-section">
+  <div id="map"></div>
+  <div class="map-sidebar">
+    <div class="sidebar-header">
+      <h3>🔍 Filtrar por Solução</h3>
+      <input class="sol-filter-input" id="sidebarSearch" placeholder="Buscar solução…" oninput="filterSidebar(this.value)">
+    </div>
+    <div class="sol-list" id="solList"></div>
+    <button class="btn-clear" onclick="clearFilter()">✕ Limpar filtro — mostrar todos</button>
+  </div>
+</div>
+
+<!-- CATALOG SECTION -->
+<div class="catalog-section">
+  <div class="catalog-header">
+    <div>
+      <h2>Catálogo de Soluções</h2>
+      <p>Explore todas as gov techs disponíveis no programa</p>
+    </div>
+  </div>
+  <div class="filters-bar">
+    <label>Dimensão</label>
+    <select class="filter-select" id="filterDim" onchange="applyFilters()">
+      <option value="">Todas</option>
+      <option>Econômica</option>
+      <option>Capacidades Institucionais</option>
+      <option>Sociocultural</option>
+      <option>Meio Ambiente</option>
+    </select>
+    <label>Tipo</label>
+    <select class="filter-select" id="filterTipo" onchange="applyFilters()">
+      <option value="">Todos</option>
+      <option>Áreas verdes</option>
+      <option>Dados e inteligência</option>
+      <option>Educação</option>
+      <option>Finanças públicas</option>
+      <option>Geoprocessamento</option>
+      <option>Gestão patrimonial</option>
+      <option>Habitação</option>
+      <option>Inclusão social</option>
+      <option>Inovação</option>
+      <option>Monitoramento</option>
+      <option>Saúde</option>
+      <option>Segurança pública</option>
+      <option>Serviços e aplicações</option>
+      <option>Sistemas e tecnologia para gestão urbana</option>
+    </select>
+    <label>Nome</label>
+    <input class="filter-input" id="filterNome" placeholder="Buscar solução…" oninput="applyFilters()">
+    <span class="filter-count" id="filterCount"></span>
+  </div>
+  <div class="sol-grid" id="solGrid"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const RESGATES = [{"Município": "Bom Despacho", "Solução": "BM Tech", "Valor": "744291.25", "Data de início": "30/09/2025", "Data final": "30/03/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Caxambu", "Solução": "ZAAZ", "Valor": "378000", "Data de início": "26/09/2025", "Data final": "26/11/2025", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Formiga", "Solução": "Gooders", "Valor": "150000", "Data de início": "11/09/2025", "Data final": "11/03/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Divinópolis", "Solução": "Denvx", "Valor": "115000", "Data de início": "10/09/2025", "Data final": "10/03/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Congonhas", "Solução": "Reurb", "Valor": "50000", "Data de início": "13/08/2025", "Data final": "13/05/2026", "Tipo": "Solução Tecnológica", "Avaliado": "Sim"}, {"Município": "Conceição das Alagoas", "Solução": "E-DITGOV", "Valor": "62400", "Data de início": "11/12/2025", "Data final": "11/06/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Bela Vista de Minas", "Solução": "CHESI", "Valor": "25000", "Data de início": "19/03/2026", "Data final": "19/06/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Lambari", "Solução": "CHESI", "Valor": "25000", "Data de início": "19/03/2026", "Data final": "19/06/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Ipanema", "Solução": "Gesuas", "Valor": "27568.75", "Data de início": "10/10/2025", "Data final": "10/04/2026", "Tipo": "Solução Tecnológica", "Avaliado": "Sim"}, {"Município": "Araçuaí", "Solução": "CHESI", "Valor": "25000", "Data de início": "22/09/2025", "Data final": "22/12/2025", "Tipo": "Solução Tecnológica", "Avaliado": "Sim"}, {"Município": "São Lourenço", "Solução": "CHESI", "Valor": "25000", "Data de início": "22/09/2025", "Data final": "22/12/2025", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Alagoa", "Solução": "CHESI", "Valor": "25000", "Data de início": "29/09/2025", "Data final": "29/12/2025", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Nova Lima", "Solução": "E-DITGOV", "Valor": "19200", "Data de início": "18/09/2025", "Data final": "18/03/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Congonhas", "Solução": "Zelar", "Valor": "16500", "Data de início": "04/08/2025", "Data final": "04/11/2025", "Tipo": "Solução Tecnológica", "Avaliado": "Sim"}, {"Município": "Congonhas", "Solução": "Zelar", "Valor": "16500", "Data de início": "06/11/2025", "Data final": "06/02/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Formiga", "Solução": "MinutaIA", "Valor": "3000", "Data de início": "31/03/2026", "Data final": "30/06/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Uberlândia", "Solução": "Power of Data", "Valor": "100000", "Data de início": "16/01/2026", "Data final": "16/07/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Santa Bárbara", "Solução": "CHESI", "Valor": "25000", "Data de início": "05/12/2025", "Data final": "05/03/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Divinópolis", "Solução": "DECODE GI", "Valor": "50000", "Data de início": "18/09/2025", "Data final": "18/07/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Congonhas", "Solução": "DECODE GI", "Valor": "50000", "Data de início": "25/09/2025", "Data final": "25/07/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Téofilo Otoni", "Solução": "CHESI", "Valor": "25000", "Data de início": "16/01/2026", "Data final": "16/04/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Varginha", "Solução": "FizPay", "Valor": "35000", "Data de início": "07/08/2025", "Data final": "07/08/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Tiradentes", "Solução": "CHESI", "Valor": "25000", "Data de início": "16/01/2026", "Data final": "16/04/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Itajubá", "Solução": "Diamond Nero", "Valor": "50000", "Data de início": "19/03/2026", "Data final": "19/09/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Paraisópolis", "Solução": "CHESI", "Valor": "25000", "Data de início": "26/01/2026", "Data final": "26/04/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Viçosa", "Solução": "Checkbits", "Valor": "65000", "Data de início": "23/03/2026", "Data final": "22/09/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "São Brás do Suaçui", "Solução": "FizPay", "Valor": "7000", "Data de início": "23/10/2025", "Data final": "23/10/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Varginha", "Solução": "FizPay", "Valor": "84000", "Data de início": "19/11/2025", "Data final": "19/11/2026", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "São João del-Rei", "Solução": "Conta Comigo Digital", "Valor": "4300", "Data de início": "19/03/2026", "Data final": "19/03/2027", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Caxambu", "Solução": "Mantbank", "Valor": "12000", "Data de início": "05/12/2025", "Data final": "05/10/2028", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Congonhas", "Solução": "Mantbank", "Valor": "48000", "Data de início": "20/01/2026", "Data final": "20/11/2028", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Três Corações", "Solução": "Mantbank", "Valor": "48000", "Data de início": "05/03/2026", "Data final": "05/01/2029", "Tipo": "Solução Tecnológica", "Avaliado": ""}, {"Município": "Sabará", "Solução": "Mantbank", "Valor": "48000", "Data de início": "19/03/2026", "Data final": "19/01/2029", "Tipo": "Solução Tecnológica", "Avaliado": ""}];
+
+const AVALIACOES = [{"municipio": "Congonhas", "solucao": "Reurb.online", "nota1": 4, "nota2": 3, "nota3": 5, "nota4": 3, "media": 3.75, "depoimento": "O município avaliou a adoção da plataforma REURB.ONLINE, contudo, sua implementação imediata não se mostrou viável em razão do estágio avançado dos trabalhos já em curso. A experiência evidenciou o potencial da plataforma como ferramenta estratégica para futuros projetos, especialmente se implementada desde as fases iniciais."}, {"municipio": "Araçuaí", "solucao": "Plataforma Chesi", "nota1": 5, "nota2": 5, "nota3": 5, "nota4": 5, "media": 5.0, "depoimento": "A experiência foi muito valiosa, a plataforma norteia os municípios a melhorarem a gestão pública, captar recursos e monitorar indicadores baseados nos Objetivos de Desenvolvimento Sustentável (ODS) da ONU."}, {"municipio": "Ipanema", "solucao": "Conexão", "nota1": 5, "nota2": 5, "nota3": 5, "nota4": 5, "media": 5.0, "depoimento": "A conexão da rede foi a principal mudança alcançada, além da possibilidade de monitoramento dos dados para orientar o trabalho da gestão. Um destaque é ter todos os arquivos em formato digital, que agiliza o processo de atendimento."}, {"municipio": "Ipanema", "solucao": "GESUAS", "nota1": 5, "nota2": 5, "nota3": 5, "nota4": 5, "media": 5.0, "depoimento": "O que faltava na rede era conexão e com a plataforma esse problema foi solucionado, além dela permitir a gestão acompanhar os dados para melhorar a efetividade da prestação de serviços."}, {"municipio": "Bom Despacho", "solucao": "Super App - BM Tech", "nota1": 5, "nota2": 5, "nota3": 5, "nota4": 5, "media": 5.0, "depoimento": "O município teve uma experiência satisfatória com a plataforma durante a participação no programa Cidades do Futuro. A solução apresentada pela BM TECH demonstrou potencial para atender diferentes demandas da administração pública por meio do conceito de Super App do Cidadão."}];
+
+const SOLUCOES = [{"Solução": "PREFEITURA NA PALMA DA MÃO", "Versão resumida (Atualizada)": "O aplicativo centraliza todos os serviços municipais em um app, incluindo agendamentos; serviços (Poda de árvores, reparos, fiscalizações sanitáris);  consultas; 2ª via de contas; e inscrições escolares. Meu ônibus (Integrado ao Moovit)", "Impacto esperado": "Ampliação do acesso da população aos serviços do município e aumento da transparência, tornando a gestão mais eficiente.", "Vídeo": "https://www.youtube.com/watch?v=6cWv39p9M1k", "Site": "https://queslo.com.br/softwares/app-para-prefeitura-cidade/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Serviços e aplicações", "Descrição": "O aplicativo white label (i. e.: personalizável com a marca do seu município) da Queslo Software centraliza todos os serviços municipais em um app fácil de usar, incluindo agendamentos; serviços como poda de árvore, reparo de buracos e fiscalização sanitária;  consultas; emissão de 2ª via de contas; e inscrições escolares.\nMeu ônibus (Integrado ao Moovit)"}, {"Solução": "Denvx", "Versão resumida (Atualizada)": "Solução integrada com sistema de monitoramento e aplicativo móvel para agentes de endemias (dengue), que fornece dados em tempo real para decisões estratégicas e prevenção eficaz.", "Impacto esperado": "Agilidade no trabalho dos agentes de endemias e fortalecimento do monitoramento e da prevenção da dengue.", "Vídeo": "", "Site": "https://denvx.com.br/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Serviços e aplicações", "Descrição": "Descrição atual: Solução integrada que inclui um sistema de monitoramento robusto e um aplicativo móvel especializado para agentes de endemias(dengue). Proporciona dados em tempo real, ajudando na tomada de decisões estratégicas e na implementação de medidas preventivas mais eficazes.\n\n- Localização dos agentes;\n- Formulários online;\n- Funcionamento offiline e online\n-Dados georreferenciados das vistorias das residências"}, {"Solução": "Reurb app", "Versão resumida (Atualizada)": "Plataforma digital para regularização fundiária urbana, digitalizando processos de REURB de ponta a ponta.", "Impacto esperado": "Agilização da regularização fundiária, aumentando a segurança jurídica dos cidadãos.", "Vídeo": "", "Site": "", "Dimensão": "Econômica", "Tópicos": "Habitação", "Descrição": "A solução Desenvolvimento e Licenciamento de Programas de Computador para Regularização Fundiária Urbana (REURB.online) realiza a administração de protocolos e documentos, que permite a automação na análise e gestão dos projetos de Regularização Fundiária Urbana (REURB). \nA plataforma foi desenvolvida para as prefeituras e visa solucionar todos os problemas relacionados a REURB, dispondo de um acompanhamento em tempo real. \nO sistema permite, ainda, uma maior participação do estado ou outros entes fiscalizadores (Ministério Público, Cartório e Registro de Imóveis) no gerenciamento do processo, através do acesso integral às informações implementadas no sistema."}, {"Solução": "Mantbank", "Versão resumida (Atualizada)": "A doação inclui a emissão e entrega de cartão físico e virtual com tarja magnética e/ou aplicativo virtual para cessão de benefícios. Mais sistema online e aplicativo para acompanhamento pelo gestor/usuário. Sistema on-line e/ou via aplicativo de gestão de frota (abastecimento e manutenção).", "Impacto esperado": "Inclusão financeira dos servidores municipais e melhora na gestão de benefícios.", "Vídeo": "", "Site": "", "Dimensão": "Econômica", "Tópicos": "Inovação", "Descrição": "O Mantbank é um instituto financeiro com foco na transformação econômica,\n social e ambiental. A doação inclui a emissão e entrega de cartão físico e\n virtual com tarja magnética e/ou aplicativo virtual para cessão de benefícios\n, vale educação, de vales alimentação e/ou refeição. Mais sistema online e \naplicativo para acompanhamento pelo gestor/usuário. Sistema on-line e/ou via \naplicativo de gestão de frota (abastecimento e manutenção)."}, {"Solução": "Pagar", "Versão resumida (Atualizada)": "Solução moderna e econômica de pagamento e arrecadação multicanal. A plataforma permite uma arrecadação mais eficiente, com integração a diversos canais de atendimento, como site, aplicativo, WhatsApp e e-mail, facilitando o acesso à guia de pagamento e melhorando a experiência do contribuinte.", "Impacto esperado": "Modernização da arrecadação e melhoria da experiência do contribuinte.", "Vídeo": "https://www.youtube.com/watch?v=sepLTNaJKBY", "Site": "https://www.pagar.com.br/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Serviços e aplicações", "Descrição": "BillApp oferece o PAGAR, uma solução moderna e econômica de pagamento e arrecadação multicanal. Pode ser adotada pela Secretaria da Fazenda dos Municípios ou pelo Governo de Minas Gerais, permitindo um método de arrecadação mais eficiente. O PAGAR pode ser integrado a qualquer canal de atendimento utilizado para disponibilizar a guia de arrecadação ao cidadão ou empresa, como site, aplicativo, WhatsApp ou e-mail."}, {"Solução": "ReacHR", "Versão resumida (Atualizada)": "Agiliza processos seletivos na administração pública, usando Inteligência Artificial para simplificar triagens e gerar maior eficiência. A plataforma centraliza etapas do recrutamento, sugere roteiros de entrevistas e se integra ao LinkedIn, otimizando tempo e organização.", "Impacto esperado": "Eficiência na gestão de pessoas e redução de erros na folha de pagamento.", "Vídeo": "", "Site": "https://www.reachr.com.br/", "Dimensão": "Econômica", "Tópicos": "Inovação", "Descrição": "O RH digital Reachr é uma solução inovadora para otimizar o tempo gasto em processos seletivos, trazendo agilidade, organização e maior eficiência à administração pública do seu município. As tarefas operacionais e o processo de triagem e match são simplificados com Inteligência Artificial. Além disso, o software concentra processos no mesmo lugar, fornece roteiro de entrevistas e possui integração com o Linkedin, dentre outras possibilidades."}, {"Solução": "CHESI", "Versão resumida (Atualizada)": "Centraliza o monitoramento de planos, indicadores, rankings, projetos, fontes de financiamento e um banco de leis para apoiar a elaboração de projetos, facilitando a gestão estratégica, captação de recursos e prestação de contas.", "Impacto esperado": "Melhoria da gestão pública, aumento de captação de recursos e alinhamento com os ODS.", "Vídeo": "https://www.youtube.com/watch?v=C4TlLqmBmcY", "Site": "https://institutolici.com.br/consultoria-e-tecnologia/", "Dimensão": "Econômica", "Tópicos": "Sistemas e tecnologia para gestão urbana", "Descrição": "A Plataforma CHESI monitora os instrumentos de Planejamento, os Indicadores de Performance (ODS e IEGM), Rankings, Benchmarking de Projetos, Banco de leis e mais de 100 fontes de financiamento em um só lugar, facilitando decisões estratégicas, a captação de recursos e a prestação de contas, acelerando a transformação do seu município em uma cidade inteligente.\n- Dashboard de Benchmarking\nmonitoramento para os 32\nplanos exigidos por lei\n-160+ indicadores alinhados\nà Agenda 2030 e planos\nobrigatórios\n- Sugestões automáticas de\nfontes de financiamento\n-Banco de leis para apoio a\nelaboração de projetos, DFD,\nETP, TR, entre outros."}, {"Solução": "DIRECIONA.ME", "Versão resumida (Atualizada)": "Auxilia municípios no diagnóstico e mapeamento de competências, identificando habilidades e necessidades de capacitação. A ferramenta apoia a criação de políticas públicas eficazes e fortalece equipes municipais, abrangendo servidores públicos, professores, estudantes, empresários e líderes comunitários.", "Impacto esperado": "Redução do desemprego e promoção da qualificação profissional.", "Vídeo": "https://www.youtube.com/watch?v=qpvY1ua_Mvg", "Site": "https://www.direcioname.com.br/", "Dimensão": "Econômica", "Tópicos": "Inovação", "Descrição": "Plataforma Digital oferece aos municípios uma solução para realizar o diagnóstico e mapeamento de competências, ajudando na identificação das habilidades existentes e nas necessidades de capacitação. Essa ferramenta contribui para o desenvolvimento de políticas públicas mais eficientes e para o fortalecimento das equipes municipais.\n- Servidores da prefeitura\n- Servidores de hospitais e escolas;\n- Professores\n- Estudantes, empresários e líderes comunitários"}, {"Solução": "GOODERS", "Versão resumida (Atualizada)": "Facilita a gestão e divulgação de campanhas públicas, conectando prefeituras diretamente à comunidade. Permite distribuir incentivos financeiros ou crédito social para estimular a participação, aumentar o engajamento e medir o impacto das ações, tornando as políticas públicas mais eficazes.", "Impacto esperado": "Fortalecimento do ecossistema de impacto social e engajamento comunitário.", "Vídeo": "", "Site": "", "Dimensão": "Sociocultural", "Tópicos": "Inclusão social", "Descrição": "A Plataforma Gooders facilita a gestão e divulgação de campanhas de interesse público, permitindo que as prefeituras se comuniquem diretamente com a comunidade. Além disso, pode ajudar a distribuir incentivos financeiros ou de crédito social em troca de participação. Por isso, ela ajuda a aumentar a adesão popular às ações públicas e permite medir o impacto das campanhas, promovendo maior engajamento e eficácia nas políticas públicas."}, {"Solução": "RastreaMed", "Versão resumida (Atualizada)": "A plataforma integra dados de saúde do paciente com entidades de atendimento, iniciando pelo módulo \"Resgate\" (HPP, alergias, tratamento) e cartão de vacinação para crianças e pets. Em desenvolvimento, possui geolocalização, monitoramento de doenças e mapeamento de processos em parceria com secretarias de saúde e educação.", "Impacto esperado": "Redução de desperdício de medicamentos e melhora no controle do estoque de saúde.", "Vídeo": "https://www.youtube.com/watch?v=S8gyqBuW0gE", "Site": "https://www.rastreamed.com.br/", "Dimensão": "Sociocultural", "Tópicos": "Saúde", "Descrição": "Plataforma de integração de dados de Saúde do Paciente com as Entidades de Atendimento à Saúde. Começamos pelo módulo “Resgate” (HPP, Alergias, Tratamento), Cartão Vacinação Criança e PET. Em desenvolvimento: Geolocalização, Propagação de doenças, Mapeamento de Processos em parceria com Secretarias Saúde (ESF) e Educação (creches)"}, {"Solução": "A Recreativa/MIA", "Versão resumida (Atualizada)": "A MIA é uma assistente digital com Inteligência Artificial que ajuda educadores a criar planos de aula personalizados, alinhados à BNCC e ao contexto dos alunos. Ela também desenvolve sequências didáticas, adapta atividades conforme as dificuldades de aprendizado e oferece roteiros personalizados.", "Impacto esperado": "Melhoria do aprendizado, redução da evasão escolar e aumento do rendimento dos alunos.", "Vídeo": "https://www.youtube.com/watch?v=U4ig0NpRJWI", "Site": "https://educacao.arecreativa.com.br/mia", "Dimensão": "Sociocultural", "Tópicos": "Educação", "Descrição": "MIA é uma assistente digital que põe a Inteligência Artificial a serviço da educação, economizando tempo e melhorando o ensino. A IA da MIA cria rapidamente planos de aula personalizados com base na BNCC e no contexto, produz sequências didáticas articuladas, adapta atividades com base em dificuldades de aprendizado e guia estudantes com roteiros sob medida\n- Gera plano de aula personalizados em minutos;\n- Criação de sequências didátivas para condução do aprendizado;\n- Atividades adaptadas para dificuldades de aprendizagem de alunos"}, {"Solução": "eArbo", "Versão resumida (Atualizada)": "O e-ARBO é um sistema de gestão de florestas urbanas que utiliza um aplicativo para inventário florestal, fornecendo dados estratégicos para municípios. Facilita o planejamento urbano sustentável com avaliação da vegetação via IA, análise fitossanitária e cálculo da quantidade de carbono assimilado.", "Impacto esperado": "Gestão sustentável da arborização urbana e redução de riscos.", "Vídeo": "https://www.youtube.com/watch?v=8hcJHRLxOWA", "Site": "https://ctcsolucoesflorestais.com.br/", "Dimensão": "Meio Ambiente", "Tópicos": "Áreas verdes", "Descrição": "O e-ARBO é um sistema de gestão de florestas urbanas que utiliza um aplicativo para elaboração do inventário florestal gerando informações estratégicas aos municípios. O software é de fácil utilização e manuseio, com custo operacional coerente ao tamanho e perfil dos municípios, alinhando ao conceito de cidades inteligentes e já desenhando para cálculos de carbono. Esta solução facilitará um planejamento urbano a partir de um diagnóstico de florestas urbanas, possibilitando intervenções que vão impactar positivamente na qualidade do ambiente. \n\n-Permite avaliar a vegetação arborea por meio de IA (evitando possíveis transtornos)\n- Análise Fitossanitária\n- Levanta a quantidade de carbono assimilado;"}, {"Solução": "SIBLAM", "Versão resumida (Atualizada)": "O SIBLAM é um sistema online que agiliza e padroniza o licenciamento ambiental com segurança jurídica e técnica, eliminando o uso de papel. Permite armazenar e organizar documentos de forma segura, seguindo a Resolução CONAMA 237/1997 e garantindo eficiência no funcionamento do órgão responsável.", "Impacto esperado": "Melhoria da conformidade ambiental e agilidade no licenciamento.", "Vídeo": "https://www.youtube.com/watch?v=7XHopEg6aLM", "Site": "https://tuxtu.com.br/siblam/", "Dimensão": "Meio Ambiente", "Tópicos": "Áreas verdes", "Descrição": "O Sistema Brasileiro de Licenciamento Ambiental (SIBLAM) é um software que opera 100% online e proporciona padronização e celeridade ao procedimento de licenciamento ambiental, com segurança jurídica e técnica, sem uso de papel. Ele permite anexar e armazenar, de forma segura, todos os documentos envolvidos no processo, organizando e otimizando o funcionamento do órgão responsável. Suas etapas atendem à Resolução 237/1997 do CONAMA e utilizam o Método Quantitativo de Indicadores (MQI) também conhecido como método Battelle (EES Enviromental Evaluation System)."}, {"Solução": "SIGAU", "Versão resumida (Atualizada)": "O Sistema de Gestão de Arborização Urbana permite aos gestores públicos cadastrar, atualizar e gerenciar dados sobre árvores e áreas verdes, facilitando o planejamento de intervenções e emissão de relatórios. Cidadãos podem solicitar licenças para poda ou remoção diretamente pelo sistema, que também identifica rapidamente árvores que necessitam de cuidados e gera indicadores para apoiar a gestão.", "Impacto esperado": "Ordenamento territorial e maior controle sobre o crescimento urbano.", "Vídeo": "", "Site": "https://tuxtu.com.br/sigau/", "Dimensão": "Meio Ambiente", "Tópicos": "Áreas verdes", "Descrição": "O Sistema de Gestão de Arborização Urbana é um programa que permite aos gestores públicos cadastrarem, atualizarem e gerenciarem dados de áreas verdes e de todas as árvores plantadas na cidade, possibilitando a emissão de relatórios e índices qualitativos e quantitativos de arborização, bem como planejar prioridades de intervenção. \n\n- O cidadão pode solicitar a licença ambiental de poda ou remoção de árvore feito pelo sistema;\n- Possibilita cadastramento de árvores e áreas verdes;\n- Identifica mais rápido árvores que precisam de remoção, poda ou tratamentos silviculturais;\n- O sistema gera resultados preliminares através dos relatórios e índices;"}, {"Solução": "ZAAZ", "Versão resumida (Atualizada)": "Digitalização de comércios locais para o mercado digital, possibilitando a venda de seus produtos nos principais marketplaces do mercado ou em até seu site próprio. Integração das contas na Shopee, Americanas, Mercado Livre e Magazine Luiza.", "Impacto esperado": "Aumento da arrecadação e recuperação de créditos em dívida ativa.", "Vídeo": "", "Site": "https://zaazonline.com/", "Dimensão": "Econômica", "Tópicos": "Inovação", "Descrição": "Digitalizaçãos de comércios locais para o mercado\ndigital, possibilitando a venda de seus produtos nos principais marketplaces do mercado ou em até seu site próprio.\n\n- Cadastro dos produtos para venda online.\n- Integração das contas nos marketplaces: Shopee, Americanas, Mercado Livre e Magazine Luiza."}, {"Solução": "Zelar", "Versão resumida (Atualizada)": "Facilita o registro e acompanhamento de ocorrências feitas pelos cidadãos, promovendo comunicação direta com a prefeitura. As demandas aparecem em tempo real no mapa do município e integram o cronograma de serviços.", "Impacto esperado": "Melhoria na manutenção urbana, agilidade nas respostas e transparência para o cidadão.", "Vídeo": "https://www.youtube.com/watch?v=_7_4U78W-sc", "Site": "https://transmedia.net.br/zelar/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Serviços e aplicações", "Descrição": "Aplicativo e Plataforma Digital de Zeladoria Municipal: Facilita o registro de ocorrências, acompanhamento de status, comunicação com órgãos públicos e geração de relatórios, promovendo eficiência e transparência na gestão municipal. \nAs demandas registradas pelos munícipes, aparecem, em tempo real, no mapa virtual do município e passam a fazer parte do cronograma de serviços da prefeitura.\nA principal funcionalidade do aplicativo é facilitar a comunicação das pessoas com a prefeitura, seja para relatar problemas de buracos nas ruas e calçadas, acúmulo de lixo, poda de árvores, bueiros entupidos, entre outros serviços."}, {"Solução": "Conta Comigo Digital", "Versão resumida (Atualizada)": "A Conta Comigo Digital conecta utilities e setor público aos bancos para centralizar o envio automático de boletos de consumo e impostos. A plataforma reduz custos de arrecadação, combate fraudes e diminui inadimplência.", "Impacto esperado": "Inclusão financeira, redução da informalidade e promoção do empreendedorismo local.", "Vídeo": "https://www.youtube.com/watch?v=lqo1f_cT2oQ", "Site": "https://contacomigo.digital/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Serviços e aplicações", "Descrição": "A Conta Comigo Digital é uma fintech que conecta Utilities e Setor Público aos Bancos para a entrega do boleto de consumo e impostos ao cidadão. Funciona como um centralizador dos boletos não registrados (convênios e PIX) do Brasil. O cidadão passará a receber o boleto dentro do ambiente bancário automaticamente e independente de quantos e quais bancos ele tenha.\n\nResultados:\n- Reduzir custo de arredacadação\n- Combater as fraudes\n- Reduzir inadimplência"}, {"Solução": "Maxbot", "Versão resumida (Atualizada)": "A plataforma de atendimento integrada ao WhatsApp e Instagram conta com chatbot para respostas rápidas e automatizadas aos cidadãos. Os atendimentos são gerenciados pela central Maxbot, que organiza a distribuição para a equipe da prefeitura, gera protocolos e coleta feedback, garantindo eficiência e melhor experiência.", "Impacto esperado": "Redução de filas e melhora na experiência do cidadão no atendimento público.", "Vídeo": "https://www.youtube.com/watch?v=9S4b4WQU_Gs", "Site": "https://www.maxbot.com.br/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Monitoramento", "Descrição": "Plataforma de Atendimento ao Cliente compatívei com whatsapp e instagram que conta com um chatbot integrado, oferecendo respostas rápidas e automatizadas nos atendimentos dos cidadãos\nIsso garante um atendimento eficiente, reduzindo o tempo de espera e melhorando a experiência do cliente\nOs atendimentos caem na central de atendimento Maxbot e é distribuito para o time de atendimento da prefeitura de forma organizada e estruturada com geração de protocolos de atendimento e pesquisa de satisfação."}, {"Solução": "GESUAS", "Versão resumida (Atualizada)": "Plataforma digital que apoia a gestão municipal da assistência social no âmbito do Sistema Único de Assistência Social (SUAS), promovendo mais eficiência, transparência e controle das informações e serviços voltados à população em situação de vulnerabilidade.", "Impacto esperado": "Melhora na gestão da assistência social e agilidade nos atendimentos às famílias.", "Vídeo": "https://www.youtube.com/watch?v=q9zSHme5o4s", "Site": "https://www.gesuas.com.br/", "Dimensão": "Econômica", "Tópicos": "Sistemas e tecnologia para gestão urbana", "Descrição": "A solução GESUAS (Gestão de Sistema Único de Assistência Social) é uma\n plataforma digital que auxilia na gestão dos serviços e programas de assistência \nsocial no âmbito municipal, especialmente para municípios mineiros que integram\n o Sistema Único de Assistência Social (SUAS). A plataforma é voltada para\n melhorar a eficiência, a transparência e o controle de informações e serviços \nvoltados para a população em situação de vulnerabilidade social."}, {"Solução": "E-DIT GOV", "Versão resumida (Atualizada)": "A E-ditGov é uma plataforma que automatiza a elaboração dos principais artefatos da fase preparatória das licitações: PCA, DFD, ETP, TR, Mapa de Riscos e Editais, garantindo documentos completos, padronizados e totalmente em conformidade com a Lei 14.133/21.", "Impacto esperado": "Modernização da gestão documental e redução do uso de papel.", "Vídeo": "", "Site": "https://www.editgov.com.br/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Serviços e aplicações", "Descrição": "A E-ditGov é uma  plataforma que automatiza a elaboração dos principais artefatos \nda fase preparatória das licitações: PCA, DFD, ETP, TR, Mapa de Riscos e Editais, \ngarantindo documentos completos, padronizados e totalmente em conformidade \ncom a Lei 14.133/21."}, {"Solução": "MinutaIA", "Versão resumida (Atualizada)": "O Ecossistema jAI é uma solução de inteligência artificial jurídica para a advocacia pública brasileira, combinando NLP avançado com conhecimento do sistema jurídico nacional. Está presente em mais de 50 Procuradorias Municipais.", "Impacto esperado": "Agilidade na produção de documentos jurídicos e redução de erros.", "Vídeo": "", "Site": "https://www.minutaia.com.br/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Serviços e aplicações", "Descrição": "O Ecossistema jAI se trata de solução revolucionária de inteligência artificial jurídica,\nespecialmente desenvolvida para atender às complexas demandas da advocacia pública brasileira. \nO Ecossistema jAI representa o estado da arte em tecnologia aplicada ao Direito, combinando\n algoritmos avançados de processamento de linguagem natural com profundo conhecimento do sistema jurídico nacional. \nEstamos presentes em mais de 50 Procuradorias Municipais do país, incluíndo 10 capitais."}, {"Solução": "Visão 360 Saúde", "Versão resumida (Atualizada)": "A Plataforma de Big Data da Saúde usa inteligência de dados para apoiar a tomada de decisão dos gestores de saúde. Com ela, é possível analisar grandes volumes de informações e obter insights valiosos, melhorando a gestão e a eficiência dos serviços de saúde municipais.", "Impacto esperado": "Melhora na tomada de decisão em saúde pública e otimização dos recursos.", "Vídeo": "", "Site": "https://grupodesenvolve.com.br/", "Dimensão": "Sociocultural", "Tópicos": "Saúde", "Descrição": "A Plataforma de Big Data da Saúde usa inteligência de dados para apoiar \na tomada de decisão dos gestores de saúde. Com ela, é possível analisar \ngrandes volumes de informações e obter insights valiosos, melhorando a\n gestão e a eficiência dos serviços de saúde municipais."}, {"Solução": "Diamond Nero", "Versão resumida (Atualizada)": "Plataforma de gestão inteligente de frotas e patrimônio público municipal com rastreamento em tempo real.", "Impacto esperado": "Redução de custos com frota e maior controle sobre o patrimônio público.", "Vídeo": "", "Site": "", "Dimensão": "Capacidades Institucionais", "Tópicos": "Gestão patrimonial"}, {"Solução": "Checkbits", "Versão resumida (Atualizada)": "Sistema de monitoramento inteligente com IA para gestão de câmeras de segurança e análise de imagens urbanas.", "Impacto esperado": "Aumento da segurança pública e melhoria na gestão de eventos urbanos.", "Vídeo": "https://www.youtube.com/watch?v=3L6eU5fo-Bs", "Site": "https://checkbits.com.br/", "Dimensão": "Capacidades Institucionais", "Tópicos": "Segurança pública", "Descrição": "A Ferramenta Digital oferece aos municípios uma\n solução prática para preencher checklists e formulários, aplicáveis em processos como inspeções, auditorias, vistorias e padrões de operação. Ela facilita a coleta e organização de informações, tornando os processos mais eficientes e padronizados.\n\n- Possivel armazenar comentarios, fotos e planos de ação;\n- Checklists programados  com hora, data e frequência\n- Gera dashboards;"}, {"Solução": "Power of Data", "Versão resumida (Atualizada)": "Plataforma de analytics e business intelligence para prefeituras, gerando painéis de dados integrados para tomada de decisão.", "Impacto esperado": "Decisões baseadas em dados e maior transparência na gestão pública.", "Vídeo": "", "Site": "", "Dimensão": "Capacidades Institucionais", "Tópicos": "Dados e inteligência"}, {"Solução": "DECODE GI", "Versão resumida (Atualizada)": "Sistema de geoprocessamento e inteligência territorial para gestão de informações geográficas municipais.", "Impacto esperado": "Melhoria no planejamento urbano e gestão territorial baseada em dados geoespaciais.", "Vídeo": "", "Site": "https://decodetecnologia.com/", "Dimensão": "Meio Ambiente", "Tópicos": "Geoprocessamento", "Descrição": "A DECODE GI é uma plataforma que gerencia unidades consumidoras de energia de maneira eficiente, permitindo o monitoramento centralizado de infraestruturas como ruas, escolas e delegacias. A plataforma fornece dados detalhados para apoiar a tomada de decisões e a expansão urbana, ajudando a evitar multas por consumo excessivo ou atrasos. Além disso, permite visualizar o consumo por grupos ou secretarias e criar indicadores de desempenho (KPIs) de eficiência energética, otimizando o uso de energia e melhorando o controle e a gestão de recursos."}, {"Solução": "FizPay", "Versão resumida (Atualizada)": "Plataforma de pagamentos e cobranças para prefeituras, facilitando arrecadação de tributos e taxas municipais com Pix e boleto.", "Impacto esperado": "Aumento da arrecadação municipal e redução da inadimplência.", "Vídeo": "https://www.youtube.com/watch?v=ZZYw0jC5aVQ", "Site": "https://fizpay.com.br/", "Dimensão": "Econômica", "Tópicos": "Finanças públicas", "Descrição": "O FizPay oferece uma conta digital para servidores\npúblicos, cidadãos e empresas, permitindo que estas\nofereçam cashback exclusivo aos seus clientes nos\ncomércios locais. Centraliza a gestão de\nbenefícios como vale-alimentação e refeição e\npossibilita a criação de moedas locais por governos,\nfortalecendo a economia comunitária.\n\n- Cashback local (fortalecer a economica local)\n- Moeda social: Auxilio financeira para famílias em situação de vulnerabilidade social;\n- Auxílio Educação: auxílio para famílias vulneráveis acessarem materiais escolares\n- Credito verde - moeda verde para população colavorar com a coleta seletiva municipal\n- Credito Consignado - servidores possam fazer antecipação salarial"}];
+
+// ═══════════════════════════════════════════
+// GEOCODES (approximate coordinates for MG cities)
+// ═══════════════════════════════════════════
+const GEOCODES = {
+  "Bom Despacho": [-19.73, -45.25], "Caxambu": [-21.97, -44.93], "Formiga": [-20.46, -45.43],
+  "Divinópolis": [-20.13, -44.88], "Congonhas": [-20.50, -43.85], "Conceição das Alagoas": [-19.92, -47.99],
+  "Bela Vista de Minas": [-19.83, -43.10], "Lambari": [-21.97, -45.35], "Ipanema": [-19.40, -41.71],
+  "Araçuaí": [-16.85, -42.06], "São Lourenço": [-22.11, -45.05], "Alagoa": [-22.17, -44.64],
+  "Nova Lima": [-19.98, -43.85], "Bambuí": [-20.01, -45.98], "Araxá": [-19.59, -46.94],
+  "Arcos": [-20.27, -45.53], "Entre Rios de Minas": [-20.66, -44.08], "Barão de Cocais": [-19.94, -43.48],
+  "Barbacena": [-21.22, -43.77], "Boa Esperança": [-21.09, -45.56], "Brazópolis": [-22.47, -45.61],
+  "Caeté": [-19.88, -43.66], "Carmo do Cajuru": [-20.18, -44.76], "Cataguases": [-21.38, -42.69],
+  "Coronel Xavier Chaves": [-21.01, -44.17], "Delfim Moreira": [-22.48, -45.28], "Esmeraldas": [-19.76, -44.31],
+  "Itamonte": [-22.28, -44.87], "Governador Valadares": [-18.85, -41.94], "Guanhães": [-18.78, -42.93],
+  "Guaxupé": [-21.30, -46.71], "Itabirito": [-20.25, -43.80], "Lavras": [-21.24, -44.99],
+  "Lagoa Dourada": [-20.91, -44.08], "Lagoa Santa": [-19.63, -43.89], "Patos de Minas": [-18.57, -46.52],
+  "Malacacheta": [-17.84, -42.07], "Monsenhor Paulo": [-21.63, -45.61], "Muzambinho": [-21.36, -46.52],
+  "Ouro Preto": [-20.38, -43.50], "Paracatu": [-17.22, -46.87], "Paraisópolis": [-22.55, -45.78],
+  "Taiobeiras": [-15.81, -42.24], "Perdões": [-21.09, -44.99], "Poços de Caldas": [-21.79, -46.56],
+  "Pompeu": [-19.22, -44.94], "Ponte Nova": [-20.41, -42.90], "Pouso Alegre": [-22.23, -45.93],
+  "Sacramento": [-19.86, -47.44], "Uberlândia": [-18.91, -48.27], "Santa Bárbara": [-19.96, -43.41],
+  "Santa Rita do Sapucaí": [-22.25, -45.70], "Santo Antonio do Monte": [-20.09, -45.30],
+  "São Brás do Suaçuí": [-20.62, -43.75], "São João del-Rei": [-21.13, -44.26], "Sarzedo": [-20.03, -44.14],
+  "Sete Lagoas": [-19.46, -44.24], "Téofilo Otoni": [-17.86, -41.50], "Teófilo Otoni": [-17.86, -41.50],
+  "Varginha": [-21.55, -45.43], "Tiradentes": [-21.11, -44.17], "Itajubá": [-22.42, -45.45],
+  "Viçosa": [-20.76, -42.88], "São Brás do Suaçui": [-20.62, -43.75], "Três Corações": [-21.69, -45.26],
+  "Sabará": [-19.88, -43.81], "Uberaba": [-19.74, -47.93], "Conceição das Alagoas": [-19.92, -47.99],
+  "Boa Esperança": [-21.09, -45.56]
+};
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function fmtMoney(v) {
+  const n = parseFloat(v.toString().replace('R$','').replace('.','').replace(',','.').trim());
+  if (isNaN(n)) return v;
+  return 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function normalize(s) { return (s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+function getAvaliacao(municipio, solucao) {
+  const mNorm = normalize(municipio);
+  const sNorm = normalize(solucao);
+  return AVALIACOES.find(a => normalize(a.municipio) === mNorm && (normalize(a.solucao).includes(sNorm) || sNorm.includes(normalize(a.solucao).split(' ')[0])));
+}
+
+function starsHTML(media) {
+  let h = '';
+  for (let i = 1; i <= 5; i++) h += `<span class="star ${i <= Math.round(media) ? 'on' : ''}">★</span>`;
+  return h;
+}
+
+function dimClass(dim) {
+  const d = normalize(dim||'');
+  if (d.includes('econ')) return 'dim-economica';
+  if (d.includes('instit') || d.includes('capacid')) return 'dim-institucional';
+  if (d.includes('social') || d.includes('cultura')) return 'dim-sociocultural';
+  if (d.includes('amb')) return 'dim-ambiente';
+  return 'dim-outro';
+}
+
+// ═══════════════════════════════════════════
+// STATS HEADER
+// ═══════════════════════════════════════════
+const munsBenef = new Set(RESGATES.map(r=>r['Município'].trim())).size;
+const solsUnicas = new Set(RESGATES.map(r=>r['Solução'].trim())).size;
+const totalVal = RESGATES.reduce((s,r)=>{ const n=parseFloat(r['Valor'].toString().replace('R$','').replace('.','').replace(',','.').trim()); return s+(isNaN(n)?0:n);},0);
+document.getElementById('header-stats').innerHTML = `
+  <div class="stat-pill"><strong>${munsBenef}</strong> municípios</div>
+  <div class="stat-pill"><strong>${solsUnicas}</strong> soluções</div>
+  <div class="stat-pill"><strong>R$ ${(totalVal/1e6).toFixed(1)}M</strong> investidos</div>
+`;
+
+// ═══════════════════════════════════════════
+// MAP
+// ═══════════════════════════════════════════
+const map = L.map('map', { zoomControl: true }).setView([-19.5, -44.5], 6);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+// Build marker icon
+function makeIcon(color) {
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:14px;height:14px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,
+    iconSize: [14,14], iconAnchor: [7,7], popupAnchor: [0,-10]
+  });
+}
+const iconTec = makeIcon('#1B4F8A');
+const iconAval = makeIcon('#F5A623');
+
+let allMarkers = [];
+let activeFilter = null;
+
+// Group resgates by municipality
+const byMun = {};
+RESGATES.forEach(r => {
+  const mun = r['Município'].trim();
+  if (!byMun[mun]) byMun[mun] = [];
+  byMun[mun].push(r);
+});
+
+function buildPopupContent(mun, resgates) {
+  let html = '';
+  resgates.forEach(r => {
+    const av = getAvaliacao(mun, r['Solução']);
+    const tipoCls = 'tipo-tec';
+    html += `<div class="popup-header">
+      <div class="mun">📍 ${mun}</div>
+      <div class="sol-name">${r['Solução']}</div>
+    </div>
+    <div class="popup-body">
+      <div class="popup-row"><span class="label">Valor</span><span class="val">${fmtMoney(r['Valor'])}</span></div>
+      <div class="popup-row"><span class="label">Início</span><span class="val">${r['Data de início']}</span></div>
+      <div class="popup-row"><span class="label">Fim</span><span class="val">${r['Data final']}</span></div>
+      <div class="popup-row"><span class="label">Tipo</span><span class="val"><span class="popup-tipo ${tipoCls}">${r['Tipo']}</span></span></div>
+      ${av ? `<div class="popup-rating">
+        <div class="rating-title">⭐ Avaliação do Município</div>
+        <div class="stars">${starsHTML(av.media)}</div>
+        <div class="sub-notas">
+          <span class="sub-nota">Atendimento: <strong>${av.nota1}/5</strong></span>
+          <span class="sub-nota">Facilidade: <strong>${av.nota2}/5</strong></span>
+          <span class="sub-nota">Treinamento: <strong>${av.nota3}/5</strong></span>
+          <span class="sub-nota">Ganhos: <strong>${av.nota4}/5</strong></span>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-weight:700;color:#0A2342;font-size:1rem;margin-bottom:.4rem">Média: ${av.media.toFixed(1)} / 5.0</div>
+        ${av.depoimento ? `<div class="depoimento-block">"${av.depoimento}"</div>` : ''}
+      </div>` : ''}
+    </div>`;
+    if (resgates.indexOf(r) < resgates.length - 1) html += '<hr style="margin:0;border:none;border-top:2px solid #f0f0f0">';
+  });
+  return html;
+}
+
+function renderMarkers(filterSol) {
+  allMarkers.forEach(m => map.removeLayer(m));
+  allMarkers = [];
+
+  Object.entries(byMun).forEach(([mun, resgates]) => {
+    const coords = GEOCODES[mun];
+    if (!coords) return;
+    const filtered = filterSol ? resgates.filter(r => normalize(r['Solução']) === normalize(filterSol)) : resgates;
+    if (!filtered.length) return;
+
+    const hasAval = filtered.some(r => r['Avaliado'] === 'Sim');
+    const icon = hasAval ? iconAval : iconTec;
+
+    // Slight jitter for multiple markers in same city
+    const lat = coords[0] + (Math.random()-.5)*.03;
+    const lng = coords[1] + (Math.random()-.5)*.03;
+
+    const marker = L.marker([lat, lng], { icon });
+    marker.bindPopup(L.popup({ maxWidth: 310, minWidth: 300 }).setContent(buildPopupContent(mun, filtered)));
+    marker.addTo(map);
+    allMarkers.push(marker);
+  });
+}
+
+renderMarkers(null);
+
+// Legend
+const legend = L.control({ position: 'bottomleft' });
+legend.onAdd = function() {
+  const div = L.DomUtil.create('div', 'map-legend');
+  div.innerHTML = `
+    <div style="font-weight:700;font-size:.75rem;margin-bottom:.4rem;color:#0A2342">Legenda</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#F5A623"></div> Avaliado pelo município</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1B4F8A"></div> Solução Tecnológica</div>`;
+  return div;
+};
+legend.addTo(map);
+
+// ═══════════════════════════════════════════
+// SIDEBAR FILTER LIST
+// ═══════════════════════════════════════════
+const solCounts = {};
+RESGATES.forEach(r => {
+  const s = r['Solução'].trim();
+  solCounts[s] = (solCounts[s]||0) + 1;
+});
+const solNames = Object.keys(solCounts).sort();
+
+function buildSidebar(filter) {
+  const list = document.getElementById('solList');
+  const q = normalize(filter||'');
+  list.innerHTML = '';
+  solNames.filter(s => !q || normalize(s).includes(q)).forEach(s => {
+    const tag = document.createElement('button');
+    tag.className = 'sol-tag' + (activeFilter === s ? ' active' : '');
+    tag.innerHTML = `${s} <span class="count">×${solCounts[s]}</span>`;
+    tag.onclick = () => toggleFilter(s);
+    list.appendChild(tag);
+  });
+}
+
+function filterSidebar(q) { buildSidebar(q); }
+function toggleFilter(sol) {
+  activeFilter = activeFilter === sol ? null : sol;
+  buildSidebar(document.getElementById('sidebarSearch').value);
+  renderMarkers(activeFilter);
+}
+function clearFilter() {
+  activeFilter = null;
+  document.getElementById('sidebarSearch').value = '';
+  buildSidebar('');
+  renderMarkers(null);
+}
+
+buildSidebar('');
+
+// ═══════════════════════════════════════════
+// CATALOG — get municipalities per solution
+// ═══════════════════════════════════════════
+const solMuns = {};
+RESGATES.forEach(r => {
+  const s = normalize(r['Solução'].trim());
+  const mun = r['Município'].trim();
+  const tipo = r['Tipo'];
+  if (!solMuns[s]) solMuns[s] = { muns: new Set(), tipo };
+  solMuns[s].muns.add(mun);
+});
+
+function getSolMuns(solucao) {
+  const key = normalize(solucao);
+  const entry = solMuns[key];
+  return entry ? [...entry.muns] : [];
+}
+function getSolTipo(solucao) {
+  const key = normalize(solucao);
+  return solMuns[key]?.tipo || '';
+}
+
+function renderCatalog(data) {
+  const grid = document.getElementById('solGrid');
+  const count = document.getElementById('filterCount');
+  if (!data.length) {
+    grid.innerHTML = '<div class="empty-state"><div>🔍</div>Nenhuma solução encontrada com os filtros selecionados.</div>';
+    count.innerHTML = '';
+    return;
+  }
+  count.innerHTML = `<strong>${data.length}</strong> de ${SOLUCOES.length} soluções`;
+  grid.innerHTML = data.map(sol => {
+    const nome = sol['Solução'];
+    const muns = getSolMuns(nome);
+    const tipo = getSolTipo(nome);
+    const dimCls = dimClass(sol['Dimensão']);
+    const tipoCls = tipo ? 'tipo-tec' : '';
+    const desc = (sol['Versão resumida (Atualizada)'] || '').trim().slice(0, 160);
+    const dim = sol['Dimensão']?.trim() || 'Sem dimensão';
+    const topico = sol['Tópicos']?.trim();
+    const site = sol['Site']?.trim();
+    const video = sol['Vídeo']?.trim();
+
+    return `<div class="sol-card" onclick="openModal('${nome.replace(/'/g,"\\'")}')">
+      <div class="card-top">
+        <div class="card-dim">${dim}</div>
+        <div class="card-nome">${nome}</div>
+        ${topico ? `<span class="card-topico">${topico}</span>` : ''}
+      </div>
+      <div class="card-body">
+        ${desc ? `<p class="card-desc">${desc}${desc.length >= 158 ? '…' : ''}</p>` : '<p class="card-desc" style="color:#aaa;font-style:italic">Clique para ver detalhes</p>'}
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:auto">
+          ${site ? `<span style="font-size:.72rem;background:#EBF4FF;color:#1B4F8A;border:1px solid #BCD9F5;padding:.2rem .55rem;border-radius:5px">🌐 Site</span>` : ''}
+          ${video ? `<span style="font-size:.72rem;background:#FEE2E2;color:#DC2626;border:1px solid #FECACA;padding:.2rem .55rem;border-radius:5px">▶ Vídeo</span>` : ''}
+          ${muns.length ? `<span style="font-size:.72rem;background:#EDF2F9;color:#1B4F8A;padding:.2rem .55rem;border-radius:5px">📍 ${muns.length} mun.</span>` : ''}
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="dim-badge ${dimCls}">${dim}</span>
+        ${tipo ? `<span class="popup-tipo ${tipoCls}">${tipo}</span>` : ''}
+        <span style="font-size:.72rem;color:var(--texto-leve);font-family:'DM Mono',monospace">Ver detalhes →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════
+let modalMapInstance = null;
+let modalMapMarkers = [];
+
+function openModal(solNome) {
+  const sol = SOLUCOES.find(s => s['Solução'] === solNome);
+  if (!sol) return;
+
+  const nome = sol['Solução'];
+  const dim = sol['Dimensão']?.trim() || '';
+  const topico = sol['Tópicos']?.trim() || '';
+  // Use Descrição (rich) with fallback; escape HTML entities then restore newlines as <br>
+  const rawDesc = (sol['Descrição'] || sol['Versão resumida (Atualizada)'] || '').trim();
+  const desc = rawDesc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  const impacto = (sol['Impacto esperado'] || '').trim();
+  const site = sol['Site']?.trim() || '';
+  const video = sol['Vídeo']?.trim() || '';
+
+  // municipalities for this solution
+  const resgatesForSol = RESGATES.filter(r => normalize(r['Solução'].trim()) === normalize(nome));
+  const munsUniq = [...new Set(resgatesForSol.map(r => r['Município'].trim()))];
+  const totalVal = resgatesForSol.reduce((s, r) => {
+    const n = parseFloat(r['Valor'].toString().replace('R$','').replace(',','.').trim());
+    return s + (isNaN(n) ? 0 : n);
+  }, 0);
+
+  // depoimentos for this solution
+  const depos = AVALIACOES.filter(a => {
+    const sNorm = normalize(a.solucao);
+    const nNorm = normalize(nome);
+    return sNorm.includes(nNorm.split(' ')[0]) || nNorm.includes(sNorm.split(' ')[0]);
+  });
+
+  // populate header
+  document.getElementById('modalEye').textContent = dim || 'Solução GovTech';
+  document.getElementById('modalTitle').textContent = nome;
+  const topicoEl = document.getElementById('modalTopico');
+  topicoEl.textContent = topico;
+  topicoEl.style.display = topico ? 'inline-block' : 'none';
+
+  // stats row removed — no longer shown
+
+  // show/hide tabs based on data availability
+  const tabMapaBtn = document.getElementById('tabMapaBtn');
+  const tabDepoBtn = document.getElementById('tabDepoBtn');
+  tabMapaBtn.style.display = munsUniq.length ? '' : 'none';
+  tabDepoBtn.style.display = depos.length ? '' : 'none';
+
+  // impacto
+  const impEl = document.getElementById('modalImpacto');
+  if (impacto) {
+    impEl.style.display = 'block';
+    document.getElementById('modalImpactoTxt').textContent = impacto;
+  } else { impEl.style.display = 'none'; }
+
+  // desc — use innerHTML so line breaks (<br>) in Descrição field render correctly
+  document.getElementById('modalDesc').innerHTML = desc;
+
+  // links
+  let linksHtml = '';
+  if (site) linksHtml += `<a class="modal-link site" href="${site}" target="_blank">🌐 Acessar site</a>`;
+  if (video) linksHtml += `<a class="modal-link video" href="${video}" target="_blank">▶ Assistir vídeo</a>`;
+  document.getElementById('modalLinks').innerHTML = linksHtml;
+
+  // muns info in info tab
+  if (munsUniq.length) {
+    document.getElementById('modalMunsInfo').innerHTML = `
+      <div style="font-size:.72rem;color:var(--texto-leve);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:.5rem">Municípios com implantação</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.35rem">
+        ${munsUniq.map(m => {
+          const hasAv = depos.some(d => normalize(d.municipio) === normalize(m));
+          return `<span class="modal-mun-chip ${hasAv?'avaliado':''}">${hasAv?'⭐ ':''}${m}</span>`;
+        }).join('')}
+      </div>`;
+  } else {
+    document.getElementById('modalMunsInfo').innerHTML = '';
+  }
+
+  // depoimentos tab
+  const depoContainer = document.getElementById('modalDepos');
+  if (depos.length) {
+    depoContainer.innerHTML = depos.map(d => `
+      <div class="depo-card">
+        <p class="depo-text">${d.depoimento}</p>
+        <div class="depo-meta">
+          <div>
+            <div class="depo-mun">📍 ${d.municipio}</div>
+            <div class="depo-sol">${d.solucao}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="depo-stars">${[1,2,3,4,5].map(i=>`<span class="depo-star ${i<=Math.round(d.media)?'on':''}">★</span>`).join('')}</div>
+            <div style="font-family:'DM Mono',monospace;font-weight:700;color:var(--azul);font-size:.9rem">${d.media.toFixed(1)} / 5.0</div>
+          </div>
+        </div>
+        <div class="depo-notas">
+          <span class="depo-nota-chip">Atendimento: <strong>${d.nota1}/5</strong></span>
+          <span class="depo-nota-chip">Facilidade: <strong>${d.nota2}/5</strong></span>
+          <span class="depo-nota-chip">Treinamento: <strong>${d.nota3}/5</strong></span>
+          <span class="depo-nota-chip">Ganhos: <strong>${d.nota4}/5</strong></span>
+        </div>
+      </div>`).join('');
+  } else {
+    depoContainer.innerHTML = `<div class="no-depo"><div>💬</div>Nenhum depoimento registrado ainda para esta solução.</div>`;
+  }
+
+  // mun list in map tab
+  document.getElementById('modalMunList').innerHTML = munsUniq.map(m => {
+    const hasAv = depos.some(d => normalize(d.municipio) === normalize(m));
+    return `<span class="modal-mun-chip ${hasAv?'avaliado':''}">${hasAv?'⭐ ':''}${m}</span>`;
+  }).join('');
+
+  // reset tabs — always start on info
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('.modal-tab').classList.add('active');
+  document.getElementById('tab-info').classList.add('active');
+
+  // open overlay
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // build modal map (deferred to allow DOM paint)
+  setTimeout(() => buildModalMap(munsUniq, depos, nome), 80);
+}
+
+function buildModalMap(munsUniq, depos, solNome) {
+  if (modalMapInstance) {
+    modalMapInstance.remove();
+    modalMapInstance = null;
+  }
+  const mapEl = document.getElementById('modal-map');
+  mapEl.innerHTML = '';
+
+  modalMapInstance = L.map('modal-map', { zoomControl: true, scrollWheelZoom: false }).setView([-19.5, -44.5], 6);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 19
+  }).addTo(modalMapInstance);
+
+  const bounds = [];
+  munsUniq.forEach(mun => {
+    const coords = GEOCODES[mun];
+    if (!coords) return;
+    const hasAv = depos.some(d => normalize(d.municipio) === normalize(mun));
+    const color = hasAv ? '#F5A623' : '#1B4F8A';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;background:${color};border:2.5px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>`,
+      iconSize: [14,14], iconAnchor: [7,7], popupAnchor: [0,-10]
+    });
+
+    // find resgate for this mun
+    const r = RESGATES.find(x => x['Município'].trim() === mun && normalize(x['Solução'].trim()) === normalize(solNome));
+    const av = depos.find(d => normalize(d.municipio) === normalize(mun));
+
+    let popHtml = `<div style="font-size:.78rem;font-weight:700;color:#0A2342;margin-bottom:.3rem">📍 ${mun}</div>`;
+    if (r) popHtml += `<div style="font-size:.75rem;color:#5E7896">Valor: <strong style="color:#0A2342;font-family:monospace">${fmtMoney(r['Valor'])}</strong></div>`;
+    if (r) popHtml += `<div style="font-size:.75rem;color:#5E7896">Início: ${r['Data de início']}</div>`;
+    if (av) {
+      popHtml += `<div style="margin-top:.4rem;font-size:.75rem;color:#92600A;font-weight:600">⭐ Avaliação: ${av.media.toFixed(1)}/5</div>`;
+      popHtml += `<div style="font-size:.72rem;font-style:italic;margin-top:.3rem;color:#444;max-width:200px">"${av.depoimento.slice(0,100)}…"</div>`;
+    }
+
+    const marker = L.marker(coords, { icon });
+    marker.bindPopup(popHtml, { maxWidth: 230 });
+    marker.addTo(modalMapInstance);
+    bounds.push(coords);
+  });
+
+  if (bounds.length > 1) modalMapInstance.fitBounds(bounds, { padding: [30,30] });
+  else if (bounds.length === 1) modalMapInstance.setView(bounds[0], 9);
+
+  setTimeout(() => modalMapInstance.invalidateSize(), 150);
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  if (id === 'mapa' && modalMapInstance) {
+    setTimeout(() => modalMapInstance.invalidateSize(), 100);
+  }
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+
+function applyFilters() {
+  const dim = document.getElementById('filterDim').value;
+  const tipo = document.getElementById('filterTipo').value;
+  const nome = normalize(document.getElementById('filterNome').value);
+  const filtered = SOLUCOES.filter(s => {
+    if (dim && normalize(s['Dimensão']||'') !== normalize(dim)) return false;
+    if (tipo && normalize(s['Tópicos']||'') !== normalize(tipo)) return false;
+    if (nome && !normalize(s['Solução']).includes(nome) && !normalize(s['Versão resumida (Atualizada)']||'').includes(nome)) return false;
+    return true;
+  });
+  renderCatalog(filtered);
+}
+
+renderCatalog(SOLUCOES);
+</script>
+</body>
+</html>
