@@ -66,8 +66,25 @@
     grid-template-columns: 1fr 300px;
     height: 520px;
     border-bottom: 3px solid var(--ouro);
+    position: relative;
   }
   #map { width: 100%; height: 100%; }
+  .map-title {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 800;
+    background: var(--azul);
+    color: var(--branco);
+    padding: .6rem 1.1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    border-left: 4px solid var(--ouro);
+    font-size: .95rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  .map-title span { color: var(--ouro); }
   .map-sidebar {
     background: var(--azul);
     display: flex;
@@ -236,7 +253,11 @@
     background: var(--azul);
     padding: 1.1rem 1.2rem .9rem;
     position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: .7rem;
   }
+  .card-top-text { flex: 1; min-width: 0; }
   .card-dim {
     font-size: .65rem;
     font-family: 'DM Mono', monospace;
@@ -256,6 +277,27 @@
     border-radius: 999px;
     font-weight: 500;
   }
+  /* logo da empresa no card do catálogo */
+  .card-logo-wrap {
+    flex-shrink: 0;
+    width: 42px; height: 42px;
+    background: var(--branco);
+    border-radius: 10px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .card-logo-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  /* imagem de capa do card do catálogo */
+  .card-cover {
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    background: var(--cinza-bg);
+  }
+  .card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .card-body { padding: 1rem 1.2rem; flex: 1; display: flex; flex-direction: column; gap: .7rem; }
   .card-desc { font-size: .82rem; color: var(--texto-leve); line-height: 1.55; flex: 1; }
   .card-impacto {
@@ -313,10 +355,10 @@
     padding: .2rem .55rem;
     border-radius: 999px;
   }
-  .dim-economica { background: #D1FAE5; color: #065F46; }
-  .dim-institucional { background: #DBEAFE; color: #1E40AF; }
-  .dim-sociocultural { background: #EDE9FE; color: #5B21B6; }
-  .dim-ambiente { background: #D1FAE5; color: #14532D; background: #DCFCE7; }
+  .dim-economica { background: #FFEDD5; color: #C2410C; }
+  .dim-institucional { background: #DBEAFE; color: #1E3A8A; }
+  .dim-sociocultural { background: #EDE9FE; color: #6D28D9; }
+  .dim-ambiente { background: #DCFCE7; color: #15803D; }
   .dim-outro { background: #F3F4F6; color: #374151; }
   .muns-label { font-size: .72rem; color: var(--texto-leve); font-family: 'DM Mono', monospace; }
 
@@ -482,7 +524,29 @@
     justify-content: space-between;
     gap: 1rem;
   }
-  .guide-card-top-left { flex: 1; }
+  .guide-card-top-left { flex: 1; display: flex; align-items: flex-start; gap: .9rem; min-width: 0; }
+  .guide-card-top-text { flex: 1; min-width: 0; }
+  /* logo da empresa no card do guia */
+  .guide-card-logo-wrap {
+    flex-shrink: 0;
+    width: 48px; height: 48px;
+    background: var(--branco);
+    border-radius: 10px;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .guide-card-logo-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  /* imagem de capa do card do guia */
+  .guide-card-cover {
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    background: var(--cinza-bg);
+  }
+  .guide-card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .guide-card-eyebrow {
     font-size: .65rem;
     font-family: 'DM Mono', monospace;
@@ -601,19 +665,20 @@
     z-index: 9000;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
+    padding: 0;
     overflow-y: auto;
   }
   .modal-overlay.open { display: flex; }
 
   .modal-box {
     background: var(--branco);
-    border-radius: 16px;
+    border-radius: 0;
     width: 100%;
-    max-width: 880px;
-    max-height: 92vh;
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
     overflow-y: auto;
-    box-shadow: 0 24px 80px rgba(0,0,0,.45);
+    box-shadow: none;
     animation: modalIn .22s cubic-bezier(.22,1,.36,1);
     display: flex;
     flex-direction: column;
@@ -625,11 +690,27 @@
 
   .modal-head {
     background: var(--azul);
-    padding: 1.6rem 1.8rem 1.3rem;
+    padding: 3.6rem 1.8rem 1.3rem;
     position: relative;
-    border-radius: 16px 16px 0 0;
+    border-radius: 0;
     flex-shrink: 0;
   }
+  .modal-back {
+    position: absolute;
+    top: 1.1rem; left: 1.2rem;
+    background: rgba(255,255,255,.12);
+    border: none;
+    color: var(--branco);
+    font-size: .85rem;
+    font-weight: 600;
+    padding: .5rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: .35rem;
+    transition: background .15s;
+    line-height: 1;
+  }
+  .modal-back:hover { background: rgba(255,255,255,.25); }
   .modal-head .m-eye { font-size: .68rem; font-family: 'DM Mono', monospace; color: var(--ouro); text-transform: uppercase; letter-spacing: .14em; margin-bottom: .4rem; }
   .modal-head h2 { color: var(--branco); font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
   .modal-head .m-topico {
@@ -642,6 +723,34 @@
     border-radius: 999px;
     font-weight: 500;
   }
+  .modal-logo-wrap {
+    position: absolute;
+    top: 1.1rem; right: 1.2rem;
+    width: 50px; height: 50px;
+    background: var(--branco);
+    border-radius: 10px;
+    padding: 6px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.2);
+  }
+  .modal-logo-wrap.show { display: flex; }
+  .modal-logo-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .modal-head.has-logo h2 { padding-right: 64px; }
+
+  .modal-sol-image {
+    display: none;
+    width: 100%;
+    max-height: 420px;
+    object-fit: contain;
+    border-radius: 12px;
+    margin-bottom: 1.3rem;
+    border: 1px solid var(--cinza-borda);
+    background: var(--cinza-bg);
+  }
+  .modal-sol-image.show { display: block; }
+
   .modal-close {
     position: absolute;
     top: 1.1rem; right: 1.2rem;
@@ -817,7 +926,8 @@
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
   <div class="modal-box" id="modalBox">
     <div class="modal-head" id="modalHead">
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-back" onclick="closeModal()">← Voltar</button>
+      <div class="modal-logo-wrap" id="modalLogoWrap"><img id="modalLogo" alt="Logo"></div>
       <div class="m-eye" id="modalEye"></div>
       <h2 id="modalTitle"></h2>
       <span class="m-topico" id="modalTopico"></span>
@@ -831,6 +941,7 @@
 
       <!-- TAB: INFO -->
       <div class="modal-panel active" id="tab-info">
+        <img class="modal-sol-image" id="modalImage" alt="Imagem da solução">
         <div class="modal-impacto" id="modalImpacto" style="display:none">
           <div class="mi-label">💡 Impacto Esperado</div>
           <p id="modalImpactoTxt"></p>
@@ -838,6 +949,7 @@
         <p class="modal-desc" id="modalDesc"></p>
         <div class="modal-links" id="modalLinks"></div>
         <div id="modalMunsInfo"></div>
+        <div id="modalActions" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--cinza-borda)"></div>
       </div>
 
       <!-- TAB: MAPA -->
@@ -861,6 +973,7 @@
 <!-- MAP SECTION -->
 <div class="map-section">
   <div id="map"></div>
+
   <div class="map-sidebar">
     <div class="sidebar-header">
       <h3>🔍 Filtrar por Solução</h3>
@@ -894,7 +1007,7 @@
       </div>
     </div>
     <div class="guide-topics" id="guideTopics"></div>
-    <div class="guide-load-wrap" id="guideLoadWrap" style="display:none">
+    <div class="guide-load-wrap" id="guideLoadWrap">
       <button class="guide-load-btn" id="guideLoadBtn" onclick="loadGuideResults()">
         Ver Soluções →
       </button>
@@ -1046,6 +1159,31 @@ function hideLoading() {
   if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .4s'; setTimeout(()=>el.remove(), 400); }
 }
 
+// Mostra um aviso (dispensável) quando a planilha "solucoes" não retorna
+// as colunas "Logo" e/ou "Imagem" — ajuda a diagnosticar configuração do Apps Script.
+function showColumnWarning(faltando, colsDisponiveis) {
+  if (document.getElementById('colWarningBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'colWarningBanner';
+  banner.style.cssText = `
+    background:#FFF7ED;border:1px solid #FED7AA;color:#9A3412;
+    padding:.85rem 1.2rem;font-size:.8rem;line-height:1.5;
+    border-radius:8px;margin:1rem 2rem;display:flex;align-items:flex-start;gap:.6rem;
+  `;
+  banner.innerHTML = `
+    <span style="font-size:1.1rem">⚠️</span>
+    <div style="flex:1">
+      <strong>Coluna(s) ${faltando.join(' e ')} não encontrada(s) na planilha "solucoes".</strong><br>
+      Colunas recebidas do Apps Script: <code style="font-size:.75rem">${colsDisponiveis.join(', ') || '(nenhuma)'}</code><br>
+      Verifique se a aba que o Apps Script está lendo para <code>sheet=solucoes</code> é a mesma
+      que contém as colunas "Logo" e "Imagem" (ex.: "IndicadoresxSoluções"), e se essas colunas
+      têm exatamente esse nome no cabeçalho.
+    </div>
+    <button onclick="this.closest('#colWarningBanner').remove()" style="background:none;border:none;color:#9A3412;cursor:pointer;font-size:1rem;line-height:1">×</button>
+  `;
+  document.querySelector('.catalog-section').prepend(banner);
+}
+
 // ── Mapeamento de colunas da planilha de avaliações ──────────────────────────
 // Encontra valor em objeto por correspondência parcial de chave (case-insensitive, sem acento)
 function findCol(r, ...candidates) {
@@ -1120,6 +1258,27 @@ async function initData() {
     RESGATES   = mapResgates(jsonRes);
     AVALIACOES = mapAvaliacoes(jsonAval);
 
+    // Diagnóstico: verifica se as colunas "Logo"/"Imagem" vieram nos dados da planilha
+    if (SOLUCOES.length) {
+      const cols = Object.keys(SOLUCOES[0]);
+      const temLogo   = SOLUCOES.some(s => getField(s, 'Logo'));
+      const temImagem = SOLUCOES.some(s => getField(s, 'Imagem'));
+      console.log('[Diagnóstico] Colunas recebidas da planilha "solucoes":', cols);
+      // Mostra exemplos de valores Logo/Imagem das 3 primeiras soluções que tiverem algo preenchido
+      const exemplos = SOLUCOES
+        .map(s => ({ nome: s['Solução'], Logo: getField(s,'Logo'), Imagem: getField(s,'Imagem') }))
+        .filter(e => e.Logo || e.Imagem)
+        .slice(0, 3);
+      console.log('[Diagnóstico] Exemplos de Logo/Imagem encontrados:', exemplos);
+      if (!temLogo || !temImagem) {
+        const faltando = [];
+        if (!temLogo)   faltando.push('Logo');
+        if (!temImagem) faltando.push('Imagem');
+        console.warn('[Diagnóstico] Coluna(s) ' + faltando.join(' e ') + ' não encontrada(s)/vazia(s). Colunas disponíveis: ' + cols.join(', '));
+        showColumnWarning(faltando, cols);
+      }
+    }
+
     // Atualiza timestamp
     const ts = new Date().toLocaleString('pt-BR');
     let tsEl = document.getElementById('updateTimestamp');
@@ -1187,6 +1346,100 @@ const GEOCODES = {
 // ═══════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════
+// Converte links de compartilhamento do Google Drive em candidatos de URL de imagem direta
+function driveFileId(url) {
+  if (!url) return null;
+  // https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+  let m = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/);
+  if (m) return m[1];
+  // https://lh3.googleusercontent.com/d/FILE_ID
+  m = url.match(/lh3\.googleusercontent\.com\/d\/([^/?#=]+)/);
+  if (m) return m[1];
+  // https://drive.google.com/open?id=FILE_ID  ou  ...&id=FILE_ID  ou  ...?id=FILE_ID
+  m = url.match(/[?&]id=([^&#]+)/);
+  if (m) return m[1];
+  // https://drive.google.com/uc/FILE_ID
+  m = url.match(/drive\.google\.com\/uc\/([^/?#]+)/);
+  if (m) return m[1];
+  // https://drive.google.com/thumbnail?id=FILE_ID
+  m = url.match(/drive\.google\.com\/thumbnail[?&]id=([^&#]+)/);
+  if (m) return m[1];
+  return null;
+}
+
+// Escapa valor para uso seguro dentro de atributos HTML (ex: data-src="...")
+function escAttr(s) {
+  return (s || '').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Busca um campo no objeto da solução tentando o nome exato e, se não houver,
+// uma correspondência normalizada (sem acento/maiúsculas) — cobre pequenas
+// diferenças de cabeçalho vindas da planilha (ex.: "Logo ", "logo", "Logotipo").
+function getField(obj, ...names) {
+  for (const name of names) {
+    if (obj[name] !== undefined && String(obj[name]).trim() !== '') return String(obj[name]).trim();
+  }
+  const keys = Object.keys(obj);
+  for (const name of names) {
+    const k = keys.find(k => normalize(k) === normalize(name));
+    if (k && String(obj[k]).trim() !== '') return String(obj[k]).trim();
+  }
+  return '';
+}
+
+// Após renderizar os cards (catálogo ou guia), carrega logos e imagens de capa
+// que foram marcados com data-src, usando o fallback de URLs do Drive.
+function loadCardMedia(root) {
+  (root || document).querySelectorAll('img[data-src]').forEach(img => {
+    const raw = img.getAttribute('data-src');
+    img.removeAttribute('data-src');
+    const wrap = img.closest('.card-logo-wrap, .guide-card-logo-wrap, .card-cover, .guide-card-cover');
+    loadImageWithFallback(img, raw, () => {
+      if (wrap) wrap.style.display = 'none';
+    });
+  });
+}
+
+
+// Tenta carregar a imagem em vários formatos de URL, em cascata, até um funcionar.
+// Se nenhum funcionar, executa onAllFail (geralmente esconde o elemento).
+function loadImageWithFallback(imgEl, rawUrl, onAllFail) {
+  rawUrl = (rawUrl || '').trim();
+  if (!rawUrl) { onAllFail(); return; }
+
+  const candidates = [];
+  const fid = driveFileId(rawUrl);
+  if (fid) {
+    // Ordem de tentativas: as mais confiáveis primeiro
+    candidates.push(`https://drive.google.com/thumbnail?id=${fid}&sz=w800`);
+    candidates.push(`https://drive.google.com/thumbnail?id=${fid}&sz=w400`);
+    candidates.push(`https://lh3.googleusercontent.com/d/${fid}=w800`);
+    candidates.push(`https://lh3.googleusercontent.com/d/${fid}`);
+    candidates.push(`https://drive.google.com/uc?export=view&id=${fid}`);
+    candidates.push(`https://drive.google.com/uc?id=${fid}`);
+  }
+  // sempre inclui a URL original como última tentativa (cobre links diretos não-Drive)
+  if (!candidates.includes(rawUrl)) candidates.push(rawUrl);
+
+  let idx = 0;
+  function tryNext() {
+    if (idx >= candidates.length) {
+      console.warn('[Imagem] Todas as URLs falharam para:', rawUrl);
+      onAllFail();
+      return;
+    }
+    const url = candidates[idx++];
+    console.log('[Imagem] Tentando URL #' + idx + ':', url);
+    imgEl.onerror = tryNext;
+    imgEl.onload = () => {
+      imgEl.onerror = null;
+      console.log('[Imagem] Carregada com sucesso:', url);
+    };
+    imgEl.src = url;
+  }
+  tryNext();
+}
+
 function parseBRMoney(v) {
   // Handles multiple formats coming from Google Sheets / Apps Script:
   // "R$ 1.234.567,89"  → 1234567.89  (BR formatted string)
@@ -1213,7 +1466,11 @@ function normalize(s) { return (s||'').trim().toLowerCase().normalize('NFD').rep
 function getAvaliacao(municipio, solucao) {
   const mNorm = normalize(municipio);
   const sNorm = normalize(solucao);
-  return AVALIACOES.find(a => normalize(a.municipio) === mNorm && (normalize(a.solucao).includes(sNorm) || sNorm.includes(normalize(a.solucao).split(' ')[0])));
+  return AVALIACOES.find(a => {
+    if (normalize(a.municipio) !== mNorm) return false;
+    const aNorm = normalize(a.solucao);
+    return aNorm === sNorm || aNorm.includes(sNorm) || sNorm.includes(aNorm);
+  });
 }
 
 function starsHTML(media) {
@@ -1395,16 +1652,22 @@ function renderCatalog(data) {
     const tipo = getSolTipo(nome);
     const dimCls = dimClass(sol['Dimensão']);
     const tipoCls = tipo ? 'tipo-tec' : '';
-    const desc = (sol['Versão resumida (Atualizada)'] || '').trim().slice(0, 160);
+    const desc = (sol['Descrição'] || sol['Versão resumida (Atualizada)'] || '').trim().slice(0, 160);
     const dim = sol['Dimensão']?.trim() || 'Sem dimensão';
     const topico = sol['Tópicos']?.trim();
     const site = sol['Site']?.trim();
     const video = sol['Vídeo']?.trim();
+    const logoRaw = getField(sol, 'Logo');
+    const imagemRaw = getField(sol, 'Imagem');
 
     return `<div class="sol-card" onclick="openModal('${nome.replace(/'/g,"\\'")}')">
+      ${imagemRaw ? `<div class="card-cover"><img data-src="${escAttr(imagemRaw)}" alt=""></div>` : ''}
       <div class="card-top">
-        <div class="card-dim">${dim}</div>
-        <div class="card-nome">${nome}</div>
+        ${logoRaw ? `<div class="card-logo-wrap"><img data-src="${escAttr(logoRaw)}" alt="Logo"></div>` : ''}
+        <div class="card-top-text">
+          <div class="card-dim">${dim}</div>
+          <div class="card-nome">${nome}</div>
+        </div>
         ${topico ? `<span class="card-topico">${topico}</span>` : ''}
       </div>
       <div class="card-body">
@@ -1415,13 +1678,15 @@ function renderCatalog(data) {
           ${muns.length ? `<span style="font-size:.72rem;background:#EDF2F9;color:#1B4F8A;padding:.2rem .55rem;border-radius:5px">📍 ${muns.length} mun.</span>` : ''}
         </div>
       </div>
-      <div class="card-footer">
-        <span class="dim-badge ${dimCls}">${dim}</span>
-        ${tipo ? `<span class="popup-tipo ${tipoCls}">${tipo}</span>` : ''}
-        <span style="font-size:.72rem;color:var(--texto-leve);font-family:'DM Mono',monospace">Ver detalhes →</span>
+      <div class="card-footer" style="flex-direction:column;align-items:stretch;gap:.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="dim-badge ${dimCls}">${dim}</span>
+
+        </div>
       </div>
     </div>`;
   }).join('');
+  loadCardMedia(grid);
 }
 
 // ═══════════════════════════════════════════
@@ -1456,7 +1721,7 @@ function openModal(solNome) {
   const depos = AVALIACOES.filter(a => {
     const sNorm = normalize(a.solucao);
     const nNorm = normalize(nome);
-    return sNorm.includes(nNorm.split(' ')[0]) || nNorm.includes(sNorm.split(' ')[0]);
+    return sNorm === nNorm || sNorm.includes(nNorm) || nNorm.includes(sNorm);
   });
 
   // populate header
@@ -1465,6 +1730,37 @@ function openModal(solNome) {
   const topicoEl = document.getElementById('modalTopico');
   topicoEl.textContent = topico;
   topicoEl.style.display = topico ? 'inline-block' : 'none';
+
+  // logo da empresa
+  const logoRaw = getField(sol, 'Logo');
+  const logoWrap = document.getElementById('modalLogoWrap');
+  const logoImg = document.getElementById('modalLogo');
+  const modalHead = document.getElementById('modalHead');
+  if (logoRaw) {
+    logoWrap.classList.add('show');
+    modalHead.classList.add('has-logo');
+    loadImageWithFallback(logoImg, logoRaw, () => {
+      logoWrap.classList.remove('show');
+      modalHead.classList.remove('has-logo');
+    });
+  } else {
+    logoImg.removeAttribute('src');
+    logoWrap.classList.remove('show');
+    modalHead.classList.remove('has-logo');
+  }
+
+  // imagem da solução
+  const imagemRaw = getField(sol, 'Imagem');
+  const imagemEl = document.getElementById('modalImage');
+  if (imagemRaw) {
+    imagemEl.classList.add('show');
+    loadImageWithFallback(imagemEl, imagemRaw, () => {
+      imagemEl.classList.remove('show');
+    });
+  } else {
+    imagemEl.removeAttribute('src');
+    imagemEl.classList.remove('show');
+  }
 
   // stats row removed — no longer shown
 
@@ -1489,6 +1785,19 @@ function openModal(solNome) {
   if (site) linksHtml += `<a class="modal-link site" href="${site}" target="_blank">🌐 Acessar site</a>`;
   if (video) linksHtml += `<a class="modal-link video" href="${video}" target="_blank">▶ Assistir vídeo</a>`;
   document.getElementById('modalLinks').innerHTML = linksHtml;
+
+  // action buttons
+  document.getElementById('modalActions').innerHTML = `
+    <a href="https://docs.google.com/forms/u/1/d/1iUkus1lxkgzyyGpHMgeH3thb8_SQcA0dtiBPcv5xTlA/edit?usp=sharing_eil_se_dm&ts=69f354b7" target="_blank"
+      style="flex:1;display:flex;align-items:center;justify-content:center;gap:.45rem;font-size:.88rem;font-weight:700;text-decoration:none;padding:.7rem 1rem;border-radius:9px;background:#EBF4FF;color:#1B4F8A;border:1px solid #BCD9F5;transition:filter .15s"
+      onmouseover="this.style.filter='brightness(.93)'" onmouseout="this.style.filter=''">
+      📅 Marcar reunião de apresentação
+    </a>
+    <a href="https://docs.google.com/forms/u/1/d/1l6AXTHDv1ELP7j04VsdEnqalGcKT9TxxF4RBxDOy62Q/viewform" target="_blank"
+      style="flex:1;display:flex;align-items:center;justify-content:center;gap:.45rem;font-size:.88rem;font-weight:700;text-decoration:none;padding:.7rem 1rem;border-radius:9px;background:var(--ouro);color:var(--azul);border:1px solid #e8960f;transition:filter .15s;box-shadow:0 4px 14px rgba(245,166,35,.3)"
+      onmouseover="this.style.filter='brightness(.93)'" onmouseout="this.style.filter=''">
+      🏆 Resgatar solução
+    </a>`;
 
   // muns info in info tab
   if (munsUniq.length) {
@@ -1594,8 +1903,8 @@ function buildModalMap(munsUniq, depos, solNome) {
     bounds.push(coords);
   });
 
-  if (bounds.length > 1) modalMapInstance.fitBounds(bounds, { padding: [30,30] });
-  else if (bounds.length === 1) modalMapInstance.setView(bounds[0], 9);
+  if (bounds.length > 1) modalMapInstance.fitBounds(bounds, { padding: [30,30], maxZoom: 6 });
+  else if (bounds.length === 1) modalMapInstance.setView(bounds[0], 6);
 
   setTimeout(() => modalMapInstance.invalidateSize(), 150);
 }
@@ -1679,14 +1988,12 @@ function toggleGuideTopic(topic) {
     const matched = [...guideSelectedTopics].some(t => btn.textContent.trim().includes(t));
     btn.classList.toggle('selected', matched);
   });
-  // show/hide load button
+  // update load button label
   const n = guideSelectedTopics.size;
-  const loadWrap = document.getElementById('guideLoadWrap');
   const loadBtn  = document.getElementById('guideLoadBtn');
-  loadWrap.style.display = n > 0 ? '' : 'none';
-  if (n > 0) {
-    loadBtn.textContent = `Ver Soluções para ${n} tópico${n > 1 ? 's' : ''} selecionado${n > 1 ? 's' : ''} →`;
-  }
+  loadBtn.textContent = n > 0
+    ? `Ver Soluções para ${n} tópico${n > 1 ? 's' : ''} selecionado${n > 1 ? 's' : ''} →`
+    : 'Ver Soluções →';
 }
 
 function loadGuideResults() {
@@ -1700,7 +2007,7 @@ function clearGuideFilter() {
   guideSelectedTopics.clear();
   document.querySelectorAll('.guide-topic-chip').forEach(b => b.classList.remove('selected'));
   document.getElementById('guideTopics').style.display   = '';
-  document.getElementById('guideLoadWrap').style.display = 'none';
+  document.getElementById('guideLoadBtn').textContent    = 'Ver Soluções →';
   document.getElementById('guideResults').style.display  = 'none';
   document.getElementById('guideEmpty').style.display    = 'none';
 }
@@ -1711,13 +2018,9 @@ function renderGuideResults() {
   const listEl    = document.getElementById('guideList');
   const countEl   = document.getElementById('guideResultsCount');
 
-  if (guideSelectedTopics.size === 0) {
-    resultsEl.style.display = 'none';
-    emptyEl.style.display   = 'none';
-    return;
-  }
-
-  const filtered = SOLUCOES.filter(s => guideSelectedTopics.has(s['Tópicos']?.trim()));
+  const filtered = guideSelectedTopics.size > 0
+    ? SOLUCOES.filter(s => guideSelectedTopics.has(s['Tópicos']?.trim()))
+    : SOLUCOES;
 
   if (!filtered.length) {
     resultsEl.style.display = 'none';
@@ -1733,18 +2036,24 @@ function renderGuideResults() {
     const nome    = sol['Solução'];
     const dim     = sol['Dimensão']?.trim() || 'Sem dimensão';
     const topico  = sol['Tópicos']?.trim() || '';
-    const desc    = (sol['Versão resumida (Atualizada)'] || '').trim();
+    const desc    = (sol['Descrição'] || sol['Versão resumida (Atualizada)'] || '').trim();
     const impacto = (sol['Impacto esperado'] || '').trim();
     const site    = sol['Site']?.trim();
     const video   = sol['Vídeo']?.trim();
     const muns    = getSolMuns(nome);
     const dimCls  = dimClass(dim);
+    const logoRaw   = getField(sol, 'Logo');
+    const imagemRaw = getField(sol, 'Imagem');
 
     return `<div class="guide-card" onclick="openModal('${nome.replace(/'/g,"\\'")}')">
+      ${imagemRaw ? `<div class="guide-card-cover"><img data-src="${escAttr(imagemRaw)}" alt=""></div>` : ''}
       <div class="guide-card-top">
         <div class="guide-card-top-left">
-          <div class="guide-card-eyebrow">${dim}</div>
-          <div class="guide-card-nome">${nome}</div>
+          ${logoRaw ? `<div class="guide-card-logo-wrap"><img data-src="${escAttr(logoRaw)}" alt="Logo"></div>` : ''}
+          <div class="guide-card-top-text">
+            <div class="guide-card-eyebrow">${dim}</div>
+            <div class="guide-card-nome">${nome}</div>
+          </div>
         </div>
         <div class="guide-card-badges">
           ${topico ? `<span class="popup-tipo tipo-tec">${topicIcon(topico)} ${topico}</span>` : ''}
@@ -1755,16 +2064,19 @@ function renderGuideResults() {
         ${desc ? `<p class="guide-card-desc">${desc}</p>` : ''}
         ${impacto ? `<div class="guide-card-impacto"><strong>🎯 Impacto Esperado</strong>${impacto}</div>` : ''}
       </div>
-      <div class="guide-card-meta">
-        <span class="dim-badge ${dimCls}">${dim}</span>
-        <div class="guide-card-links">
-          ${site  ? `<a href="${site}"  target="_blank" class="card-link site"  onclick="event.stopPropagation()">🌐 Site</a>`  : ''}
-          ${video ? `<a href="${video}" target="_blank" class="card-link video" onclick="event.stopPropagation()">▶ Vídeo</a>` : ''}
-          <span style="font-size:.78rem;color:var(--texto-leve);font-family:'DM Mono',monospace;align-self:center">Ver detalhes →</span>
+      <div class="guide-card-meta" style="flex-direction:column;align-items:stretch;gap:.6rem">
+        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+          <span class="dim-badge ${dimCls}">${dim}</span>
+          <div class="guide-card-links">
+            ${site  ? `<a href="${site}"  target="_blank" class="card-link site"  onclick="event.stopPropagation()">🌐 Site</a>`  : ''}
+            ${video ? `<a href="${video}" target="_blank" class="card-link video" onclick="event.stopPropagation()">▶ Vídeo</a>` : ''}
+            <span style="font-size:.78rem;color:var(--texto-leve);font-family:'DM Mono',monospace;align-self:center">Ver detalhes →</span>
+          </div>
         </div>
       </div>
     </div>`;
   }).join('');
+  loadCardMedia(listEl);
 }
 
 
@@ -1775,7 +2087,7 @@ function applyFilters() {
   const filtered = SOLUCOES.filter(s => {
     if (dim && normalize(s['Dimensão']||'') !== normalize(dim)) return false;
     if (tipo && normalize(s['Tópicos']||'') !== normalize(tipo)) return false;
-    if (nome && !normalize(s['Solução']).includes(nome) && !normalize(s['Versão resumida (Atualizada)']||'').includes(nome)) return false;
+    if (nome && !normalize(s['Solução']).includes(nome) && !normalize(s['Descrição']||s['Versão resumida (Atualizada)']||'').includes(nome)) return false;
     return true;
   });
   renderCatalog(filtered);
@@ -1791,6 +2103,7 @@ function initApp() {
   console.log('[DEBUG] Primeiros valores de Valor:', RESGATES.slice(0,5).map(r=>r['Valor']));
   console.log('[DEBUG] totalVal calculado:', totalVal);
   document.getElementById('header-stats').innerHTML = `
+    <div class="stat-pill"><strong>${SOLUCOES.length}</strong> soluções disponíveis</div>
     <div class="stat-pill"><strong>${RESGATES.length}</strong> resgates</div>
     <div class="stat-pill"><strong>R$ ${(totalVal/1e6).toFixed(1)}M</strong> investidos</div>
   `;
