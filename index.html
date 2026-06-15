@@ -32,7 +32,7 @@
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    height: 68px;
+    height: 90px;
     position: sticky; top: 0; z-index: 1000;
     box-shadow: 0 2px 12px rgba(0,0,0,.25);
   }
@@ -46,8 +46,8 @@
     padding: .35rem .7rem;
     border-radius: 4px;
   }
-  header h1 { color: var(--branco); font-size: 1.15rem; font-weight: 600; }
-  header p { color: rgba(255,255,255,.55); font-size: .78rem; font-family: 'DM Mono', monospace; }
+  header h1 { color: var(--branco); font-size: 1.6rem; font-weight: 700; }
+  header p { color: rgba(255,255,255,.55); font-size: .92rem; font-family: 'DM Mono', monospace; }
   .header-right { margin-left: auto; display: flex; gap: .8rem; align-items: center; }
   .stat-pill {
     background: rgba(255,255,255,.1);
@@ -389,8 +389,8 @@
     border-bottom: 2px solid var(--cinza-borda);
   }
   .cat-tab {
-    padding: .7rem 1.6rem;
-    font-size: .88rem;
+    padding: .9rem 2rem;
+    font-size: 1.05rem;
     font-weight: 600;
     font-family: 'Space Grotesk', sans-serif;
     background: none;
@@ -419,7 +419,7 @@
   }
   .guide-hero-inner { max-width: 600px; margin: 0 auto; }
   .guide-eyebrow {
-    font-size: .68rem;
+    font-size: .95rem;
     font-family: 'DM Mono', monospace;
     color: var(--ouro);
     letter-spacing: .2em;
@@ -427,13 +427,13 @@
     margin-bottom: .7rem;
   }
   .guide-hero h2 {
-    font-size: 2rem;
+    font-size: 2.8rem;
     font-weight: 700;
     color: var(--branco);
     line-height: 1.25;
     margin-bottom: .8rem;
   }
-  .guide-sub { font-size: .92rem; color: rgba(255,255,255,.65); line-height: 1.6; }
+  .guide-sub { font-size: 1.15rem; color: rgba(255,255,255,.65); line-height: 1.6; }
 
   /* ── GUIDE TOPIC CHIPS ── */
   .guide-topics {
@@ -468,7 +468,7 @@
     color: var(--branco);
     box-shadow: 0 4px 14px rgba(10,35,66,.25);
   }
-  .guide-topic-chip .chip-icon { font-size: 1rem; }
+  .guide-topic-chip .chip-icon { font-size: 1.6rem; }
 
   /* ── GUIDE RESULTS ── */
   .guide-results-header {
@@ -927,7 +927,7 @@
   <div class="modal-box" id="modalBox">
     <div class="modal-head" id="modalHead">
       <button class="modal-back" onclick="closeModal()">← Voltar</button>
-      <div class="modal-logo-wrap" id="modalLogoWrap"><img id="modalLogo" alt="Logo"></div>
+
       <div class="m-eye" id="modalEye"></div>
       <h2 id="modalTitle"></h2>
       <span class="m-topico" id="modalTopico"></span>
@@ -985,7 +985,7 @@
 </div>
 
 <!-- CATALOG SECTION -->
-<div class="catalog-section">
+<div class="catalog-section" id="catalogSection">
 
   <!-- CATALOG TABS -->
   <div class="cat-tabs">
@@ -1494,7 +1494,7 @@ function dimClass(dim) {
 // ═══════════════════════════════════════════
 // MAP
 // ═══════════════════════════════════════════
-const map = L.map('map', { zoomControl: true }).setView([-19.5, -44.5], 6);
+const map = L.map('map', { zoomControl: true, minZoom: 6, maxZoom: 10 }).setView([-19.5, -44.5], 6);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 19
 }).addTo(map);
@@ -1731,23 +1731,8 @@ function openModal(solNome) {
   topicoEl.textContent = topico;
   topicoEl.style.display = topico ? 'inline-block' : 'none';
 
-  // logo da empresa
-  const logoRaw = getField(sol, 'Logo');
-  const logoWrap = document.getElementById('modalLogoWrap');
-  const logoImg = document.getElementById('modalLogo');
   const modalHead = document.getElementById('modalHead');
-  if (logoRaw) {
-    logoWrap.classList.add('show');
-    modalHead.classList.add('has-logo');
-    loadImageWithFallback(logoImg, logoRaw, () => {
-      logoWrap.classList.remove('show');
-      modalHead.classList.remove('has-logo');
-    });
-  } else {
-    logoImg.removeAttribute('src');
-    logoWrap.classList.remove('show');
-    modalHead.classList.remove('has-logo');
-  }
+  modalHead.classList.remove('has-logo');
 
   // imagem da solução
   const imagemRaw = getField(sol, 'Imagem');
@@ -2103,7 +2088,7 @@ function initApp() {
   console.log('[DEBUG] Primeiros valores de Valor:', RESGATES.slice(0,5).map(r=>r['Valor']));
   console.log('[DEBUG] totalVal calculado:', totalVal);
   document.getElementById('header-stats').innerHTML = `
-    <div class="stat-pill"><strong>${SOLUCOES.length}</strong> soluções disponíveis</div>
+    <div class="stat-pill" style="cursor:pointer" onclick="document.getElementById('guideLoadWrap').scrollIntoView({behavior:'smooth', block:'center'})"><strong>${SOLUCOES.length}</strong> soluções disponíveis</div>
     <div class="stat-pill"><strong>${RESGATES.length}</strong> resgates</div>
     <div class="stat-pill"><strong>R$ ${(totalVal/1e6).toFixed(1)}M</strong> investidos</div>
   `;
