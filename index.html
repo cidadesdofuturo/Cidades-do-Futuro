@@ -1992,6 +1992,7 @@ function clearGuideFilter() {
   guideSelectedTopics.clear();
   document.querySelectorAll('.guide-topic-chip').forEach(b => b.classList.remove('selected'));
   document.getElementById('guideTopics').style.display   = '';
+  document.getElementById('guideLoadWrap').style.display = '';
   document.getElementById('guideLoadBtn').textContent    = 'Ver Soluções →';
   document.getElementById('guideResults').style.display  = 'none';
   document.getElementById('guideEmpty').style.display    = 'none';
