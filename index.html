@@ -1170,12 +1170,13 @@ function showLoading(msg) {
       z-index:99999;color:#fff;font-family:'Space Grotesk',sans-serif;gap:1rem;
     `;
     el.innerHTML = `
-      <div style="font-size:2rem">⚙️</div>
+      <div style="font-size:2rem;animation:spinLoading 1.6s linear infinite">⚙️</div>
       <div id="loadingMsg" style="font-size:1rem;font-weight:600"></div>
       <div style="font-size:.8rem;color:rgba(255,255,255,.55)" id="loadingSub"></div>
       <div style="width:220px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden;margin-top:.5rem">
         <div id="loadingBar" style="height:100%;background:#F5A623;border-radius:2px;width:0%;transition:width .4s"></div>
-      </div>`;
+      </div>
+      <style>@keyframes spinLoading{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>`;
     document.body.appendChild(el);
   }
   document.getElementById('loadingMsg').textContent = msg;
@@ -1279,6 +1280,8 @@ function mapResgates(rows) {
 let SOLUCOES = [], RESGATES = [], AVALIACOES = [];
 
 async function initData() {
+  showLoading('Carregando soluções...');
+  setLoadingProgress(10, 'Conectando às planilhas');
   try {
     // Fetch em paralelo
     const [jsonSol, jsonRes, jsonAval] = await Promise.all([
@@ -1286,6 +1289,8 @@ async function initData() {
       fetchCSV(SHEETS.resgates),
       fetchCSV(SHEETS.avaliacoes)
     ]);
+
+    setLoadingProgress(60, 'Processando dados');
 
     SOLUCOES   = jsonSol;
     RESGATES   = mapResgates(jsonRes);
@@ -1323,11 +1328,17 @@ async function initData() {
     }
     tsEl.textContent = `🔄 Dados atualizados em ${ts}`;
 
+    setLoadingProgress(100, 'Pronto!');
+
     // Renderiza tudo
     initApp();
 
+    hideLoading();
+
   } catch (err) {
     console.error('Erro ao carregar planilhas:', err);
+
+    hideLoading();
 
     // Mostra banner de erro
     const banner = document.createElement('div');
