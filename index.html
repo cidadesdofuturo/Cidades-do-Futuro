@@ -1281,7 +1281,7 @@ let SOLUCOES = [], RESGATES = [], AVALIACOES = [];
 
 async function initData() {
   showLoading('Carregando soluções...');
-  setLoadingProgress(10, 'Conectando às planilhas');
+  setLoadingProgress(10);
   try {
     // Fetch em paralelo
     const [jsonSol, jsonRes, jsonAval] = await Promise.all([
@@ -1290,7 +1290,7 @@ async function initData() {
       fetchCSV(SHEETS.avaliacoes)
     ]);
 
-    setLoadingProgress(60, 'Processando dados');
+    setLoadingProgress(60);
 
     SOLUCOES   = jsonSol;
     RESGATES   = mapResgates(jsonRes);
@@ -1328,7 +1328,7 @@ async function initData() {
     }
     tsEl.textContent = `🔄 Dados atualizados em ${ts}`;
 
-    setLoadingProgress(100, 'Pronto!');
+    setLoadingProgress(100);
 
     // Renderiza tudo
     initApp();
