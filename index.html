@@ -37,14 +37,34 @@
     box-shadow: 0 2px 12px rgba(0,0,0,.25);
   }
   .logo-badge {
-    background: var(--ouro);
-    color: var(--azul);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .logo-badge span {
+    display: block;
+    color: var(--ouro);
     font-weight: 700;
-    font-size: .7rem;
-    letter-spacing: .12em;
+    font-size: 1.05rem;
+    letter-spacing: -.01em;
+  }
+  .logo-badge small {
+    display: block;
+    color: rgba(255,255,255,.6);
+    font-weight: 600;
+    font-size: .72rem;
+    letter-spacing: .08em;
     text-transform: uppercase;
-    padding: .35rem .7rem;
-    border-radius: 4px;
+    margin-top: 2px;
+  }
+  .logo-mark { width: 56px; height: 56px; flex-shrink: 0; }
+  .header-divider { width: 1px; height: 32px; background: rgba(255,255,255,.18); flex-shrink: 0; }
+  .header-subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--branco);
+    letter-spacing: .02em;
   }
   header h1 { color: var(--branco); font-size: 1.6rem; font-weight: 700; }
   header p { color: rgba(255,255,255,.55); font-size: .92rem; font-family: 'DM Mono', monospace; }
@@ -912,7 +932,20 @@
 <body>
 
 <header>
-  <div class="logo-badge">MG GOV</div>
+  <svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true">
+    <path d="M20 6 L34 32" stroke="url(#hg1)" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M20 6 L6 32" stroke="url(#hg1)" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M20 14 L29.5 31" stroke="url(#hg1)" stroke-width="2.6" opacity=".7" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M20 14 L10.5 31" stroke="url(#hg1)" stroke-width="2.6" opacity=".7" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M20 22 L25.5 31" stroke="url(#hg1)" stroke-width="2.2" opacity=".45" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M20 22 L14.5 31" stroke="url(#hg1)" stroke-width="2.2" opacity=".45" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <defs>
+      <linearGradient id="hg1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#F5A623"/>
+        <stop offset="1" stop-color="#1B4F8A"/>
+      </linearGradient>
+    </defs>
+  </svg>
   <div>
     <h1>Marketplace de GovTechs</h1>
     <p>Programa Cidades do Futuro — Minas Gerais</p>
